@@ -1,4 +1,4 @@
 package com.seplag.desafio.backend.controller.dto;
 
-public class LoginRequestDTO {
+public record LoginRequestDTO(String login, String senha) {
 }

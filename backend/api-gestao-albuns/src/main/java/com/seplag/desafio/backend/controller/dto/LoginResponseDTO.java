@@ -1,4 +1,4 @@
 package com.seplag.desafio.backend.controller.dto;
 
-public class LoginResponseDTO {
+public record LoginResponseDTO(String token) {
 }
