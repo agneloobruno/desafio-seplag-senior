@@ -1,4 +1,9 @@
 package com.seplag.desafio.backend.repository;
 
-public class AlbumRepository {
+import com.seplag.desafio.backend.domain.Album;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface AlbumRepository extends JpaRepository<Album, Long> {
 }

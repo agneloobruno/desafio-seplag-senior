@@ -1,1 +1,42 @@
-spring.application.name=backend
+spring:
+  application:
+    name: desafio-seplag-backend
+
+  # Configura��o do Banco de Dados
+  datasource:
+    # Se estiver rodando no IntelliJ/Windows, usa localhost.
+    # Se estiver rodando dentro do Docker, usar� o nome do container (configuraremos via variavel de ambiente depois)
+    url: jdbc:postgresql://localhost:5432/desafio_db
+    username: admin
+    password: password123
+    driver-class-name: org.postgresql.Driver
+
+  # Configura��o do JPA (Hibernate)
+  jpa:
+    database: POSTGRESQL
+    show-sql: true # Mostra os SQLs no console (bom para debug)
+    hibernate:
+      ddl-auto: validate # S�nior: N�o deixa o Hibernate criar tabelas. O Flyway far� isso.
+    properties:
+      hibernate:
+        format_sql: true
+
+  # Configura��o do Flyway (Migra��es)
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# Configura��o do MinIO (Customizada)
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: capas-albuns
+
+# Configura��o do Actuator (Health Checks - Exig�ncia S�nior)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
