@@ -16,7 +16,7 @@ spring:
     database: POSTGRESQL
     show-sql: true # Mostra os SQLs no console (bom para debug)
     hibernate:
-      ddl-auto: validate # S�nior: N�o deixa o Hibernate criar tabelas. O Flyway far� isso.
+      ddl-auto: update # S�nior: N�o deixa o Hibernate criar tabelas. O Flyway far� isso.
     properties:
       hibernate:
         format_sql: true

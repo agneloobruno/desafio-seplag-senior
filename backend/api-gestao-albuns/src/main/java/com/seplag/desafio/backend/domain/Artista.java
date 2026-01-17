@@ -1,19 +1,25 @@
 package com.seplag.desafio.backend.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*; // Importando Lombok
+
 import java.util.List;
 
 @Entity
-@Data
+@Table(name = "artista")
+@Data // Faz Getters, Setters, ToString, Equals, HashCode
+@NoArgsConstructor // Construtor vazio
+@AllArgsConstructor // Construtor cheio
 public class Artista {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nome;
 
-    // Relacionamento com Album (Muitos para Muitos)
-    @ManyToMany(mappedBy = "artistas")
+    // Correção do mappedBy mantida aqui:
+    @OneToMany(mappedBy = "artista", cascade = CascadeType.ALL)
     private List<Album> albuns;
 }

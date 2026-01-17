@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
+    // Aqui poderemos adicionar buscas depois, ex: buscar álbuns por ano
 }
