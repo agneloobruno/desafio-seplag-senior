@@ -29,10 +29,10 @@ spring:
 
 # Configura��o do MinIO (Customizada)
 minio:
-  url: http://localhost:9000
+  endpoint: http://localhost:9000
   access-key: minioadmin
   secret-key: minioadmin
-  bucket: capas-albuns
+  bucket-name: capas-albuns
 
 # Configura��o do Actuator (Health Checks - Exig�ncia S�nior)
 management:
