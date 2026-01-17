@@ -1,9 +1,11 @@
 package com.seplag.desafio.backend.service;
 
 import io.minio.BucketExistsArgs;
+import io.minio.GetPresignedObjectUrlArgs; // Import Novo
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.http.Method; // Import Novo
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,9 +13,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit; // Import Novo
 
 @Service
-@RequiredArgsConstructor // Lombok criando o construtor pra nós!
+@RequiredArgsConstructor
 public class MinioService {
 
     private final MinioClient minioClient;
@@ -23,16 +26,12 @@ public class MinioService {
 
     public String upload(MultipartFile file) {
         try {
-            // 1. Verificar se o bucket existe, se não, criar
             boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
             if (!found) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
             }
 
-            // 2. Gerar um nome único para o arquivo (para não sobrescrever)
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-
-            // 3. Enviar pro MinIO
             InputStream inputStream = file.getInputStream();
             minioClient.putObject(
                     PutObjectArgs.builder()
@@ -43,10 +42,28 @@ public class MinioService {
                             .build()
             );
 
-            return fileName; // Retorna o nome salvo para guardarmos no banco
+            return fileName;
 
         } catch (Exception e) {
             throw new RuntimeException("Erro ao fazer upload da imagem: " + e.getMessage());
+        }
+    }
+
+    // --- NOVO MÉTODO: Gerar URL de visualização ---
+    public String getUrl(String fileName) {
+        try {
+            return minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
+                            .bucket(bucketName)
+                            .object(fileName)
+                            .expiry(24, TimeUnit.HOURS) // Link válido por 24h
+                            .build()
+            );
+        } catch (Exception e) {
+            // Se der erro (ex: arquivo não existe), retorna null ou loga o erro
+            e.printStackTrace();
+            return null;
         }
     }
 }

@@ -6,23 +6,23 @@ import com.seplag.desafio.backend.domain.Album;
 import com.seplag.desafio.backend.domain.Artista;
 import com.seplag.desafio.backend.repository.AlbumRepository;
 import com.seplag.desafio.backend.repository.ArtistaRepository;
-import com.seplag.desafio.backend.service.MinioService; // <--- Import Novo
+import com.seplag.desafio.backend.service.MinioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile; // <--- Import Novo
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/albuns")
-@RequiredArgsConstructor // Lombok faz os construtores pra nós
+@RequiredArgsConstructor
 public class AlbumController {
 
     private final AlbumRepository albumRepository;
     private final ArtistaRepository artistaRepository;
-    private final MinioService minioService; // <--- Injetando o serviço de upload
+    private final MinioService minioService;
 
     @PostMapping
     public ResponseEntity<AlbumResponseDTO> create(@RequestBody AlbumRequestDTO data, UriComponentsBuilder uriBuilder) {
@@ -33,30 +33,38 @@ public class AlbumController {
         albumRepository.save(album);
 
         var uri = uriBuilder.path("/albuns/{id}").buildAndExpand(album.getId()).toUri();
-        return ResponseEntity.created(uri).body(new AlbumResponseDTO(album));
+        // Na criação, ainda não tem capa, então a URL é null
+        return ResponseEntity.created(uri).body(new AlbumResponseDTO(album, null));
     }
 
     @GetMapping
     public ResponseEntity<List<AlbumResponseDTO>> list() {
         var albuns = albumRepository.findAll();
-        var dtos = albuns.stream().map(AlbumResponseDTO::new).toList();
+
+        // Transformação mágica: Para cada álbum, gera a URL se tiver capa
+        var dtos = albuns.stream().map(album -> {
+            String url = null;
+            if (album.getCapa() != null && !album.getCapa().isEmpty()) {
+                url = minioService.getUrl(album.getCapa());
+            }
+            return new AlbumResponseDTO(album, url);
+        }).toList();
+
         return ResponseEntity.ok(dtos);
     }
 
-    // --- NOVO ENDPOINT: Upload da Capa ---
     @PostMapping("/{id}/capa")
     public ResponseEntity<AlbumResponseDTO> uploadCapa(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        // 1. Buscar o álbum
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Álbum não encontrado"));
 
-        // 2. Fazer upload pro MinIO e pegar o nome do arquivo
         String nomeArquivo = minioService.upload(file);
-
-        // 3. Atualizar o nome da capa no banco
         album.setCapa(nomeArquivo);
         albumRepository.save(album);
 
-        return ResponseEntity.ok(new AlbumResponseDTO(album));
+        // Gera a URL fresquinha para retornar na hora
+        String url = minioService.getUrl(nomeArquivo);
+
+        return ResponseEntity.ok(new AlbumResponseDTO(album, url));
     }
 }
