@@ -16,14 +16,17 @@ public class Album {
     @Column(nullable = false)
     private Integer ano;
 
-    private String capa; // Guardará o nome do arquivo ou URL da imagem
+    private String capa;
 
-    @ManyToOne // Muitos álbuns podem pertencer a um Artista
+    @ManyToOne
     @JoinColumn(name = "artista_id", nullable = false)
     private Artista artista;
 
+    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL)
+    private java.util.List<Musica> musicas;
+
     // --- Construtores ---
-    public Album() {} // Obrigatório pro Hibernate
+    public Album() {}
 
     public Album(String titulo, Integer ano, Artista artista) {
         this.titulo = titulo;
