@@ -1,11 +1,7 @@
 package com.seplag.desafio.backend.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*; // Lombok ainda está aqui, mas estamos garantindo com código manual
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,8 +13,8 @@ import java.util.List;
 @Entity(name = "usuario")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+// @NoArgsConstructor  <-- O Lombok falhou aqui
+// @AllArgsConstructor <-- E aqui
 @EqualsAndHashCode(of = "id")
 public class Usuario implements UserDetails {
 
@@ -34,14 +30,18 @@ public class Usuario implements UserDetails {
 
     private String role;
 
-    // --- 👇 O CONSTRUTOR QUE ESTAVA FALTANDO ---
+    // --- 1. CONSTRUTOR VAZIO (OBRIGATÓRIO PRO HIBERNATE) ---
+    public Usuario() {
+    }
+
+    // --- 2. CONSTRUTOR CHEIO (USADO NO REGISTER) ---
     public Usuario(String login, String senha, String role){
         this.login = login;
         this.senha = senha;
         this.role = role;
     }
-    // --------------------------------------------
 
+    // ... Resto do código (getAuthorities, etc) continua igual ...
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role != null && this.role.equalsIgnoreCase("ADMIN")) {

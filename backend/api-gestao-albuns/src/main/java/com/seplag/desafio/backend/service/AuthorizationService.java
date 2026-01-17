@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor // <--- Lombok gera o construtor com os argumentos 'final'
+@RequiredArgsConstructor // ⇽-- Lombok gera o construtor com os argumentos 'final'
 public class AuthorizationService implements UserDetailsService {
 
     // 'final' garante imutabilidade e obriga a injeção no construtor
