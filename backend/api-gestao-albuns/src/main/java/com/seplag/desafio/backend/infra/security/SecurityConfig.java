@@ -28,8 +28,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Desabilita proteção contra CSRF (padrão em APIs REST)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Não guarda sessão (Stateful), usa Token
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll() // Libera o Login para todos
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll() // Libera registro (opcional)
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/artistas").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/albuns").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/albuns/*/capa").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/musicas").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/musicas").authenticated()
+
+
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Libera Swagger
                         .anyRequest().authenticated() // O resto exige Token
                 )

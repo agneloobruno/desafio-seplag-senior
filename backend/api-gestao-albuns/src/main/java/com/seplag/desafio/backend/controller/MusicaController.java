@@ -6,6 +6,7 @@ import com.seplag.desafio.backend.domain.Album;
 import com.seplag.desafio.backend.domain.Musica;
 import com.seplag.desafio.backend.repository.AlbumRepository;
 import com.seplag.desafio.backend.repository.MusicaRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class MusicaController {
     private final AlbumRepository albumRepository;
 
     @PostMapping
-    public ResponseEntity<MusicaResponseDTO> create(@RequestBody MusicaRequestDTO data, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<MusicaResponseDTO> create(@RequestBody @Valid MusicaRequestDTO data, UriComponentsBuilder uriBuilder) {
         Album album = albumRepository.findById(data.albumId())
                 .orElseThrow(() -> new RuntimeException("Álbum não encontrado"));
 
