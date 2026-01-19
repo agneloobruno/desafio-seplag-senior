@@ -42,7 +42,6 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // Ignora o filtro para rotas do Swagger
         String path = request.getRequestURI();
         return path.contains("/swagger-ui") || path.contains("/v3/api-docs");
     }

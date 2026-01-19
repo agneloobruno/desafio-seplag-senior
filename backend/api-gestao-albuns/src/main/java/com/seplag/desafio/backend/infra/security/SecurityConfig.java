@@ -8,7 +8,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,30 +27,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        // --- LIBERAÇÃO EXPLÍCITA DO SWAGGER ---
+                        // No Spring Boot 4, isso deve ser feito AQUI, e não no WebSecurityCustomizer
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // Rotas Públicas
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
 
                         // Rotas Admin
-                        .requestMatchers(HttpMethod.POST, "/artistas").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/albuns").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/artistas", "/albuns", "/musicas").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/albuns/*/capa").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/musicas").hasRole("ADMIN")
 
-                        // Rotas Autenticadas
+                        // Restante bloqueado
                         .anyRequest().authenticated()
                 )
+                // Adiciona seu filtro, mas o shouldNotFilter lá dentro vai impedir que ele rode no Swagger
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    // --- IGNORA A SEGURANÇA TOTALMENTE PARA O SWAGGER ---
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers(
-                "/v3/api-docs/**",
-                "/swagger-ui/**",
-                "/swagger-ui.html"
-        );
     }
 
     @Bean
