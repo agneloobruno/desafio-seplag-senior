@@ -6,7 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor; // <--- Importante
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor // <--- Injeção via Construtor
+@RequiredArgsConstructor
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
@@ -27,14 +27,24 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null) {
             var login = tokenService.validateToken(token);
-
             if (!login.isEmpty()) {
-                Usuario usuario = usuarioRepository.findByLogin(login).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                Usuario usuario = usuarioRepository.findByLogin(login)
+                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
                 var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    // --- MÉTODOS AUXILIARES (FORA do doFilterInternal) ---
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        // Ignora o filtro para rotas do Swagger
+        String path = request.getRequestURI();
+        return path.contains("/swagger-ui") || path.contains("/v3/api-docs");
     }
 
     private String recoverToken(HttpServletRequest request) {
