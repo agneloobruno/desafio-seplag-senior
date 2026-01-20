@@ -14,9 +14,9 @@ spring:
   # Configura��o do JPA (Hibernate)
   jpa:
     database: POSTGRESQL
-    show-sql: true # Mostra os SQLs no console (bom para debug)
+    show-sql: true
     hibernate:
-      ddl-auto: update # S�nior: N�o deixa o Hibernate criar tabelas. O Flyway far� isso.
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
