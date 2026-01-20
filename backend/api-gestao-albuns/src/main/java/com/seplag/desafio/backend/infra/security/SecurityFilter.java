@@ -27,6 +27,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (token != null) {
             var login = tokenService.validateToken(token);
+
             if (!login.isEmpty()) {
                 Usuario usuario = usuarioRepository.findByLogin(login)
                         .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
@@ -38,12 +39,14 @@ public class SecurityFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // --- MÉTODOS AUXILIARES (FORA do doFilterInternal) ---
-
+    // --- AQUI ESTÁ A CORREÇÃO ---
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.contains("/swagger-ui") || path.contains("/v3/api-docs");
+        // Ignora Swagger, Docs E AGORA TAMBÉM O MÉTODO OPTIONS (CORS)
+        return path.contains("/swagger-ui") ||
+                path.contains("/v3/api-docs") ||
+                request.getMethod().equals("OPTIONS");
     }
 
     private String recoverToken(HttpServletRequest request) {

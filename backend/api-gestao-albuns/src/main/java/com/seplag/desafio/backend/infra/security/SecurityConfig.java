@@ -13,6 +13,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -25,10 +31,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                // CORREÇÃO 1: Ativar o CORS explicitamente e vincular ao Bean abaixo
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // --- LIBERAÇÃO EXPLÍCITA DO SWAGGER ---
-                        // No Spring Boot 4, isso deve ser feito AQUI, e não no WebSecurityCustomizer
+                        // CORREÇÃO 2: Permitir explicitamente requisições OPTIONS (Preflight)
+                        // Isso impede que o Spring Security bloqueie a verificação do navegador com 403
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Swagger
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                         // Rotas Públicas
@@ -39,12 +50,28 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/artistas", "/albuns", "/musicas").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/albuns/*/capa").hasRole("ADMIN")
 
-                        // Restante bloqueado
                         .anyRequest().authenticated()
                 )
-                // Adiciona seu filtro, mas o shouldNotFilter lá dentro vai impedir que ele rode no Swagger
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    // CORREÇÃO 3: Bean de Configuração de CORS dedicado
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Permite a origem do Swagger (ajuste se necessário para sua porta frontend)
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://127.0.0.1:8080", "*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-auth-token"));
+        configuration.setExposedHeaders(List.of("x-auth-token"));
+        // AllowCredentials(true) não pode ser usado com AllowedOrigins("*"),
+        // mas é necessário se o swagger mandar cookies/auth headers complexos.
+        // Se der erro de origem, troque o "*" por origens específicas.
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
