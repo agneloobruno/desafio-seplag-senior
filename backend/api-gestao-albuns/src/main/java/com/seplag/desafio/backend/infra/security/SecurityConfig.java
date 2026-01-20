@@ -45,6 +45,7 @@ public class SecurityConfig {
                         // Rotas Públicas
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
 
                         // Rotas Admin
                         .requestMatchers(HttpMethod.POST, "/artistas", "/albuns", "/musicas").hasRole("ADMIN")
