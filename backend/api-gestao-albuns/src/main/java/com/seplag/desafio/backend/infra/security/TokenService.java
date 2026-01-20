@@ -1,17 +1,16 @@
 package com.seplag.desafio.backend.infra.security;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.seplag.desafio.backend.domain.Usuario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.seplag.desafio.backend.domain.Usuario;
-import com.auth0.jwt.algorithms.Algorithm;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-
 
 @Service
 public class TokenService {
@@ -19,24 +18,40 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
+    // --- ACCESS TOKEN (5 Minutos - Regra do Edital) ---
     public String generateToken(Usuario usuario) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("seplag-api")
+                    .withIssuer("auth-api")
                     .withSubject(usuario.getLogin())
-                    .withExpiresAt(genExpirationDate())
+                    .withExpiresAt(genExpirationDate(5)) // 5 minutos
                     .sign(algorithm);
-        } catch (JWTCreationException exception){
+        } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar token", exception);
         }
     }
 
+    // --- REFRESH TOKEN (2 Horas - Para renovar o acesso) ---
+    public String generateRefreshToken(Usuario usuario) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            return JWT.create()
+                    .withIssuer("auth-api")
+                    .withSubject(usuario.getLogin())
+                    .withClaim("type", "refresh") // Claim para diferenciar
+                    .withExpiresAt(genExpirationDate(120)) // 2 horas (120 min)
+                    .sign(algorithm);
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar refresh token", exception);
+        }
+    }
+
     public String validateToken(String token) {
-        try{
+        try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.require(algorithm)
-                    .withIssuer("seplag-api")
+                    .withIssuer("auth-api")
                     .build()
                     .verify(token)
                     .getSubject();
@@ -45,7 +60,7 @@ public class TokenService {
         }
     }
 
-    private Instant genExpirationDate() {
-        return LocalDateTime.now().plusMinutes(5).toInstant(ZoneOffset.of("-04:00"));
+    private Instant genExpirationDate(Integer minutes) {
+        return LocalDateTime.now().plusMinutes(minutes).toInstant(ZoneOffset.of("-03:00")); // Fuso Cuiabá/Brasília
     }
 }

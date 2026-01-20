@@ -1,4 +1,3 @@
 package com.seplag.desafio.backend.controller.dto;
 
-public class RefreshTokenResponseDTO {
-}
+public record RefreshTokenResponseDTO(String token) {}

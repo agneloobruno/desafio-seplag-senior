@@ -1,4 +1,8 @@
 package com.seplag.desafio.backend.controller.dto;
 
-public class RefreshTokenRequestDTO {
-}
+import jakarta.validation.constraints.NotBlank;
+
+public record RefreshTokenRequestDTO(
+        @NotBlank
+        String refreshToken
+) {}
