@@ -1,52 +1,41 @@
 package com.seplag.desafio.backend.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "album")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Album {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String titulo;
-
-    @Column(nullable = false)
     private Integer ano;
-
-    private String capa;
+    private String capa; // Nome do arquivo no MinIO
 
     @ManyToOne
-    @JoinColumn(name = "artista_id", nullable = false)
+    @JoinColumn(name = "artista_id")
     private Artista artista;
 
-    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL)
-    private java.util.List<Musica> musicas;
-
-    // --- Construtores ---
-    public Album() {}
+    // --- NOVO: Mapeamento da Lista de Músicas ---
+    // mappedBy = "album": Refere-se ao campo 'album' na classe Musica
+    // CascadeType.ALL: Se deletar o álbum, deleta as músicas
+    @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Musica> musicas = new ArrayList<>();
 
     public Album(String titulo, Integer ano, Artista artista) {
         this.titulo = titulo;
         this.ano = ano;
         this.artista = artista;
     }
-
-    // --- Getters e Setters Manuais ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
-
-    public Integer getAno() { return ano; }
-    public void setAno(Integer ano) { this.ano = ano; }
-
-    public String getCapa() { return capa; }
-    public void setCapa(String capa) { this.capa = capa; }
-
-    public Artista getArtista() { return artista; }
-    public void setArtista(Artista artista) { this.artista = artista; }
 }

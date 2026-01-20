@@ -8,6 +8,7 @@ import com.seplag.desafio.backend.repository.AlbumRepository;
 import com.seplag.desafio.backend.repository.ArtistaRepository;
 import com.seplag.desafio.backend.service.MinioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,7 +54,7 @@ public class AlbumController {
         return ResponseEntity.ok(dtos);
     }
 
-    @PostMapping("/{id}/capa")
+    @PostMapping(value = "/{id}/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AlbumResponseDTO> uploadCapa(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Álbum não encontrado"));
@@ -62,7 +63,6 @@ public class AlbumController {
         album.setCapa(nomeArquivo);
         albumRepository.save(album);
 
-        // Gera a URL fresquinha para retornar na hora
         String url = minioService.getUrl(nomeArquivo);
 
         return ResponseEntity.ok(new AlbumResponseDTO(album, url));
