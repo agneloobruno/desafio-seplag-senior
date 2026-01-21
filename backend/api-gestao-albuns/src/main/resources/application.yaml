@@ -6,9 +6,10 @@ spring:
   datasource:
     # Se estiver rodando no IntelliJ/Windows, usa localhost.
     # Se estiver rodando dentro do Docker, usar� o nome do container (configuraremos via variavel de ambiente depois)
-    url: jdbc:postgresql://localhost:5432/desafio_db
-    username: admin
-    password: password123
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:password}
+    # Tenta conectar no host (Docker) ou localhost (IDE) dinamicamente
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/desafio_db
     driver-class-name: org.postgresql.Driver
 
   # Configura��o do JPA (Hibernate)
