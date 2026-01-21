@@ -1,6 +1,6 @@
 package com.seplag.desafio.backend.infra.security;
 
-import com.seplag.desafio.backend.domain.Usuario;
+import com.seplag.desafio.backend.domain.Usuario; // <--- O IMPORT QUE FALTAVA (ERRO "CANNOT FIND SYMBOL")
 import com.seplag.desafio.backend.repository.UsuarioRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,8 +30,13 @@ public class SecurityFilter extends OncePerRequestFilter {
             var login = tokenService.validateToken(token);
 
             if (!login.isEmpty()) {
-                Usuario usuario = usuarioRepository.findByLogin(login)
+                // 1. Buscamos como UserDetails (interface padrão do Spring)
+                UserDetails userDetails = usuarioRepository.findByLogin(login)
                         .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+                // 2. Fazemos o Cast para Usuario (nossa entidade) para ter acesso aos dados específicos se precisar
+                // Isso resolve o problema de tipagem
+                Usuario usuario = (Usuario) userDetails;
 
                 var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -39,11 +45,9 @@ public class SecurityFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // --- AQUI ESTÁ A CORREÇÃO ---
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        // Ignora Swagger, Docs E AGORA TAMBÉM O MÉTODO OPTIONS (CORS)
         return path.contains("/swagger-ui") ||
                 path.contains("/v3/api-docs") ||
                 request.getMethod().equals("OPTIONS");

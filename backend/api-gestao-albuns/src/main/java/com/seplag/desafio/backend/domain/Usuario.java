@@ -1,7 +1,7 @@
 package com.seplag.desafio.backend.domain;
 
 import jakarta.persistence.*;
-import lombok.*; // Lombok ainda está aqui, mas estamos garantindo com código manual
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,11 +11,10 @@ import java.util.List;
 
 @Table(name = "usuario")
 @Entity(name = "usuario")
-@Getter
-@Setter
-// @NoArgsConstructor  <-- O Lombok falhou aqui
-// @AllArgsConstructor <-- E aqui
-@EqualsAndHashCode(of = "id")
+@Data // Faz Getter, Setter, Equals, HashCode e toString
+@NoArgsConstructor // Construtor vazio (obrigatório pro JPA/Hibernate)
+@AllArgsConstructor // Construtor cheio (útil para testes/builder)
+@Builder // Padrão de criação elegante (Usuario.builder().login(...).build())
 public class Usuario implements UserDetails {
 
     @Id
@@ -28,26 +27,21 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String senha;
 
-    private String role;
+    @Enumerated(EnumType.STRING) // Grava no banco como texto ("ADMIN"), não número (0)
+    @Column(nullable = false)
+    private UserRole role;
 
-    // --- 1. CONSTRUTOR VAZIO (OBRIGATÓRIO PRO HIBERNATE) ---
-    public Usuario() {
-    }
+    // --- Lógica de Segurança (UserDetails) ---
+    // Esta parte NÃO PODE ser Lombok, pois é regra de negócio da interface
 
-    // --- 2. CONSTRUTOR CHEIO (USADO NO REGISTER) ---
-    public Usuario(String login, String senha, String role){
-        this.login = login;
-        this.senha = senha;
-        this.role = role;
-    }
-
-    // ... Resto do código (getAuthorities, etc) continua igual ...
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.role != null && this.role.equalsIgnoreCase("ADMIN")) {
-            return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
+        // Padrão Sênior: Se for ADMIN, tem permissão de ADMIN e USER. Se for USER, só USER.
+        // Sem prefixo "ROLE_" (conforme configuramos no SecurityConfig)
+        if (this.role == UserRole.ADMIN) {
+            return List.of(new SimpleGrantedAuthority("ADMIN"), new SimpleGrantedAuthority("USER"));
         }
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("USER"));
     }
 
     @Override
@@ -61,22 +55,14 @@ public class Usuario implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+    public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
+    public boolean isAccountNonLocked() { return true; }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    public boolean isEnabled() { return true; }
 }

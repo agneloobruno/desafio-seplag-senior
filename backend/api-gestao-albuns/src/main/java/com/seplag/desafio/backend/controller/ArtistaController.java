@@ -2,8 +2,8 @@ package com.seplag.desafio.backend.controller;
 
 import com.seplag.desafio.backend.controller.dto.ArtistaRequestDTO;
 import com.seplag.desafio.backend.controller.dto.ArtistaResponseDTO;
-import com.seplag.desafio.backend.domain.Artista;
-import com.seplag.desafio.backend.repository.ArtistaRepository;
+import com.seplag.desafio.backend.service.ArtistaService; // Importa o Service
+import jakarta.validation.Valid; // Importante para validação automática
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,18 +18,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class ArtistaController {
 
-    private final ArtistaRepository repository;
+    private final ArtistaService service; // Injeta o Service, não o Repository
 
     @PostMapping
-    public ResponseEntity<ArtistaResponseDTO> create(@RequestBody ArtistaRequestDTO data, UriComponentsBuilder uriBuilder) {
-        if (data.nome() == null || data.nome().trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
+    // Adicionei @Valid. Garanta que no DTO o campo nome tenha @NotBlank
+    public ResponseEntity<ArtistaResponseDTO> create(@RequestBody @Valid ArtistaRequestDTO data, UriComponentsBuilder uriBuilder) {
 
-        Artista artista = new Artista();
-        artista.setNome(data.nome());
-
-        repository.save(artista);
+        var artista = service.criar(data);
 
         var uri = uriBuilder.path("/artistas/{id}").buildAndExpand(artista.getId()).toUri();
 
@@ -41,13 +36,7 @@ public class ArtistaController {
             @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable paginacao,
             @RequestParam(required = false) String nome) {
 
-        Page<Artista> pagina;
-
-        if (nome != null && !nome.isBlank()) {
-            pagina = repository.findByNomeContainingIgnoreCase(nome, paginacao);
-        } else {
-            pagina = repository.findAll(paginacao);
-        }
+        var pagina = service.listar(paginacao, nome);
 
         return ResponseEntity.ok(pagina.map(ArtistaResponseDTO::new));
     }

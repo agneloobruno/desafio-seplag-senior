@@ -8,9 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ArtistaRepository extends JpaRepository<Artista, Long> {
-
-    boolean existsByNome(String nome);
-
-    // Busca inteligente do Spring Data
+    // Spring Data cria a query sozinho baseado no nome do método
     Page<Artista> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 }

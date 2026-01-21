@@ -1,2 +1,15 @@
-package com.seplag.desafio.backend.domain;public enum UserRole {
+package com.seplag.desafio.backend.domain;
+
+import lombok.Getter;
+
+@Getter
+public enum UserRole {
+    ADMIN("ADMIN"),
+    USER("USER");
+
+    private final String role;
+
+    UserRole(String role) {
+        this.role = role;
+    }
 }
