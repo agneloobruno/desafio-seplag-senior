@@ -1,5 +1,5 @@
 import api from './api';
-import { LoginRequest, LoginResponse, RegisterRequest, User } from '../types/auth';
+import type { LoginRequest, LoginResponse, RegisterRequest, User } from '../types/auth';
 
 /**
  * Serviço de Autenticação
