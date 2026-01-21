@@ -34,6 +34,11 @@ public class SecurityConfig {
     @Autowired // <--- 1. INJEÇÃO NOVA
     private RateLimitFilter rateLimitFilter;
 
+    @Bean
+    static org.springframework.security.config.core.GrantedAuthorityDefaults grantedAuthorityDefaults() {
+        return new org.springframework.security.config.core.GrantedAuthorityDefaults(""); // String vazia = sem prefixo
+    }
+
     // Define o Bean principal que configura toda a cadeia de segurança (regras de acesso, filtros, etc.)
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

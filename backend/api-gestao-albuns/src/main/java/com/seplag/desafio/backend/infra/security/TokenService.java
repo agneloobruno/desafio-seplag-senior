@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Service
 public class TokenService {
@@ -61,6 +59,7 @@ public class TokenService {
     }
 
     private Instant genExpirationDate(Integer minutes) {
-        return LocalDateTime.now().plusMinutes(minutes).toInstant(ZoneOffset.of("-03:00")); // Fuso Cuiabá/Brasília
+        // Pega o momento exato em UTC e soma os minutos
+        return Instant.now().plusSeconds(minutes * 60);
     }
 }
