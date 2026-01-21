@@ -1,62 +1,48 @@
-version: '3.8'
-
 services:
-  # ---------------------------------------------------------------------------
-  # 1. Banco de Dados (PostgreSQL)
-  # Motivo: Persistência de dados relacionais (Artistas, Álbuns, Usuários)
-  # ---------------------------------------------------------------------------
-  postgres:
+  # --- BANCO DE DADOS (Mantido) ---
+  db:
     image: postgres:15-alpine
-    container_name: seplag-postgres
-    restart: always
+    container_name: desafio-db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
       POSTGRES_DB: desafio_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432" # Exposto para você acessar via DBeaver
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - desafio-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d desafio_db"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
-  # ---------------------------------------------------------------------------
-  # 2. Object Storage (MinIO) - API S3 Compatible
-  # Motivo: Armazenar imagens das capas dos álbuns 
-  # ---------------------------------------------------------------------------
+  # --- STORAGE (Mantido) ---
   minio:
-    image: minio/minio:latest
-    container_name: seplag-minio
-    restart: always
+    image: minio/minio
+    container_name: desafio-minio
     command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9000:9000" # API S3 (Backend acessa por aqui)
-      - "9001:9001" # Console Web (Acesse no navegador para ver os arquivos)
     volumes:
       - minio_data:/data
     networks:
-      - app-network
+      - desafio-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
-  # ---------------------------------------------------------------------------
-  # 2.1 Automação MinIO (Criação do Bucket) - TOQUE SÊNIOR
-  # Motivo: Cria o bucket 'capas-albuns' automaticamente ao iniciar.
-  # ---------------------------------------------------------------------------
-  minio-init:
+  # --- BUCKET CREATOR (Mantido) ---
+  createbuckets:
     image: minio/mc
-    container_name: seplag-minio-init
     depends_on:
       minio:
         condition: service_healthy
@@ -68,60 +54,39 @@ services:
       exit 0;
       "
     networks:
-      - app-network
+      - desafio-network
 
-  # ---------------------------------------------------------------------------
-  # 3. Back-End (Java / Spring Boot) - COMENTADO ATÉ A FASE 2
-  # ---------------------------------------------------------------------------
-  # backend:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   container_name: seplag-backend
-  #   restart: on-failure
-  #   environment:
-  #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/desafio_db
-  #     SPRING_DATASOURCE_USERNAME: admin
-  #     SPRING_DATASOURCE_PASSWORD: password123
-  #     MINIO_ENDPOINT: http://minio:9000
-  #     MINIO_ACCESS_KEY: minioadmin
-  #     MINIO_SECRET_KEY: minioadmin
-  #     MINIO_BUCKET_NAME: capas-albuns
-  #     SPRING_PROFILES_ACTIVE: prod
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     minio:
-  #       condition: service_healthy
-  #   networks:
-  #     - app-network
+  # --- NOSSA API (O NOVO INTEGRANTE) ---
+  api:
+    # AQUI ESTÁ O SEGREDO: Indicamos onde está o Dockerfile
+    build:
+      context: ./backend/api-gestao-albuns
+      dockerfile: Dockerfile
+    container_name: desafio-api
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/desafio_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET_NAME: capas-albuns
+      API_SECURITY_TOKEN_SECRET: minha-senha-super-secreta-prod
+    networks:
+      - desafio-network
 
-  # ---------------------------------------------------------------------------
-  # 4. Front-End (React) - COMENTADO ATÉ A FASE 4
-  # ---------------------------------------------------------------------------
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   container_name: seplag-frontend
-  #   restart: on-failure
-  #   ports:
-  #     - "80:80"
-  #   environment:
-  #     REACT_APP_API_URL: http://localhost:8080
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - app-network
-
-# Definição de Volumes para persistência
 volumes:
   postgres_data:
   minio_data:
 
-# Definição de Rede para comunicação interna
 networks:
-  app-network:
+  desafio-network:
     driver: bridge
