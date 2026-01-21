@@ -83,6 +83,21 @@ services:
     networks:
       - desafio-network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: desafio-frontend
+    restart: always
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    networks:
+      - desafio-network  
+      
+
 volumes:
   postgres_data:
   minio_data:
