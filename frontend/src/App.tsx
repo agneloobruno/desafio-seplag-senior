@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import './App.css';
 
 // Componente para proteger rotas privadas
-function PrivateRoute({ children }: { children: JSX.Element }) {
+function PrivateRoute({ children }: { children: any }) {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
 
   if (isLoading) return <div>Carregando...</div>;

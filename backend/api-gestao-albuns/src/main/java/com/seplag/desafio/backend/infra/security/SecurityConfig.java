@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
 // Indica ao Spring que esta é uma classe de configuração onde definiremos Beans
 @Configuration
@@ -58,17 +59,22 @@ public class SecurityConfig {
                         // Libera o acesso total (sem login) para as rotas de documentação do Swagger
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
+                        // Libera o acesso aos endpoints do Actuator (health, info, metrics)
+                        .requestMatchers("/actuator/**").permitAll()
+                        // Libera o acesso ao endpoint custom de health usado pelo Docker
+                        .requestMatchers("/healthz").permitAll()
+
                         // Libera o acesso para a rota de Login (para o usuário conseguir gerar o token)
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/auth/login").permitAll()
                         // Libera o acesso para a rota de Registro (para criar conta)
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/auth/register").permitAll()
                         // Libera o acesso para a rota de Refresh Token (para renovar acesso quando o token expira)
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/auth/refresh").permitAll()
 
                         // Define que apenas usuários com perfil 'ADMIN' podem cadastrar (POST) artistas, álbuns e músicas
-                        .requestMatchers(HttpMethod.POST, "/artistas", "/albuns", "/musicas").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/artistas", "/v1/albuns", "/v1/musicas").hasRole("ADMIN")
                         // Define que apenas ADMIN pode fazer upload de capa de álbum
-                        .requestMatchers(HttpMethod.POST, "/albuns/*/capa").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/v1/albuns/*/capa").hasRole("ADMIN")
 
                         // Diz que qualquer outra requisição não listada acima exige que o usuário esteja autenticado
                         .anyRequest().authenticated()
@@ -109,6 +115,12 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         // Pega o gerenciador padrão do Spring
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    // Ignora completamente os endpoints do Actuator para que ferramentas externas (healthchecks) possam acessá-los
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/actuator/**");
     }
 
     // Define o algoritmo de criptografia de senha (BCrypt) que será usado para salvar e verificar senhas no banco

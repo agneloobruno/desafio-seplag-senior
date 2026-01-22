@@ -17,7 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
-@RequestMapping("/albuns")
+@RequestMapping("/v1/albuns")
 @RequiredArgsConstructor
 public class AlbumController {
 

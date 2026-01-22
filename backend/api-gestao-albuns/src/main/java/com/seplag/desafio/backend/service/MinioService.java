@@ -57,7 +57,7 @@ public class MinioService {
                             .method(Method.GET)
                             .bucket(bucketName)
                             .object(fileName)
-                            .expiry(24, TimeUnit.HOURS) // Link válido por 24h
+                            .expiry(30, TimeUnit.MINUTES) // Link válido por 30 minutos (conforme edital)
                             .build()
             );
         } catch (Exception e) {

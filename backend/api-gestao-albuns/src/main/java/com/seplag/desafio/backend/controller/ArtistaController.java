@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
-@RequestMapping("/artistas")
+@RequestMapping("/v1/artistas")
 @RequiredArgsConstructor
 public class ArtistaController {
 

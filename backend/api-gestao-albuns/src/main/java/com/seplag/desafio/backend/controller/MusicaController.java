@@ -15,7 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.List;
 
 @RestController
-@RequestMapping("/musicas")
+@RequestMapping("/v1/musicas")
 @RequiredArgsConstructor
 public class MusicaController {
 

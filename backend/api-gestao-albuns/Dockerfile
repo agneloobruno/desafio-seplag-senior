@@ -31,6 +31,10 @@ WORKDIR /app
 ENV SPRING_PROFILES_ACTIVE=prod
 
 # Cria um usuário não-root para segurança (Prática Sênior/DevSecOps)
+# Instala utilitários necessários em runtime (ex: curl) para healthcheck
+RUN apk add --no-cache curl
+
+# Cria um usuário não-root para segurança (Prática Sênior/DevSecOps)
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 

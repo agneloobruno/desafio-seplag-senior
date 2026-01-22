@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/sync")
+@RequestMapping("/v1/sync")
 @RequiredArgsConstructor
 public class SyncController {
 
