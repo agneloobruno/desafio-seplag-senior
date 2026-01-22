@@ -11,6 +11,11 @@ export function ArtistDetails() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [showAlbumForm, setShowAlbumForm] = useState(false);
+  const [novoTitulo, setNovoTitulo] = useState('');
+  const [novoAno, setNovoAno] = useState<number | ''>('');
+  const [novoCapa, setNovoCapa] = useState<File | null>(null);
+  const [creatingAlbum, setCreatingAlbum] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -49,10 +54,54 @@ export function ArtistDetails() {
         ← Voltar para Artistas
       </button>
 
-      <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Discografia</h1>
-        <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Novo Álbum</button>
+        <button onClick={() => setShowAlbumForm((s) => !s)} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Novo Álbum</button>
       </div>
+
+      {showAlbumForm && (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!id) return;
+            if (!novoTitulo || novoTitulo.trim().length === 0) {
+              alert('Informe o título');
+              return;
+            }
+            if (!novoAno || Number(novoAno) <= 0) {
+              alert('Informe um ano válido');
+              return;
+            }
+
+            try {
+              setCreatingAlbum(true);
+              const created = await (await import('../services/albumService')).albumServiceExtras.create(Number(id), novoTitulo.trim(), Number(novoAno));
+              if (novoCapa) {
+                await (await import('../services/albumService')).albumServiceExtras.uploadCover(created.id, novoCapa);
+              }
+              setNovoTitulo('');
+              setNovoAno('');
+              setNovoCapa(null);
+              setShowAlbumForm(false);
+              carregarAlbuns(Number(id), 0);
+            } catch (err) {
+              console.error('Erro ao criar álbum', err);
+              alert('Erro ao criar álbum. Verifique o backend e o token.');
+            } finally {
+              setCreatingAlbum(false);
+            }
+          }}
+          className="mb-6 flex flex-col gap-2"
+        >
+          <input type="text" placeholder="Título" value={novoTitulo} onChange={(e) => setNovoTitulo(e.target.value)} className="p-2 border rounded" />
+          <input type="number" placeholder="Ano" value={novoAno as any} onChange={(e) => setNovoAno(e.target.value ? Number(e.target.value) : '')} className="p-2 border rounded" />
+          <input type="file" accept="image/*" onChange={(e) => setNovoCapa(e.target.files && e.target.files[0] ? e.target.files[0] : null)} />
+          <div className="flex gap-2">
+            <button type="submit" disabled={creatingAlbum} className="bg-green-600 text-white px-4 py-2 rounded">{creatingAlbum ? 'Salvando...' : 'Salvar'}</button>
+            <button type="button" onClick={() => { setShowAlbumForm(false); setNovoTitulo(''); setNovoAno(''); setNovoCapa(null); }} className="px-3 py-2 border rounded">Cancelar</button>
+          </div>
+        </form>
+      )}
 
       {loading ? (
         <div>Carregando...</div>

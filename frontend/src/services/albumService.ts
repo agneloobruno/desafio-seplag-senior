@@ -9,3 +9,20 @@ export const albumService = {
     return data;
   }
 };
+
+export const albumServiceExtras = {
+  create: async (artistaId: number, titulo: string, ano: number) => {
+    const payload = { artistaId, titulo, ano };
+    const { data } = await api.post('/v1/albuns', payload);
+    return data;
+  },
+
+  uploadCover: async (albumId: number, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    const { data } = await api.post(`/v1/albuns/${albumId}/capa`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  }
+};

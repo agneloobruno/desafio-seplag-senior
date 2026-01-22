@@ -50,6 +50,13 @@ ADMIN_SEED_ENABLED=true docker compose up --build api
 docker compose run -e ADMIN_SEED_ENABLED=true api sh -c "curl -s -X POST http://localhost:8080/v1/admin/seed"
 ```
 
+Se você definiu `ADMIN_SEED_SECRET` (recomendado), inclua o header `X-ADMIN-SEED-SECRET` na requisição:
+
+```bash
+ADMIN_SEED_ENABLED=true ADMIN_SEED_SECRET=MinhaSenhaSecreta docker compose up --build api
+curl -X POST http://localhost:8080/v1/admin/seed -H "X-ADMIN-SEED-SECRET: MinhaSenhaSecreta"
+```
+
 Notas de segurança:
 - Habilite o seed somente em ambiente de desenvolvimento/local.
 - Após uso, volte a variável para `false`/remova e reinicie os serviços.
