@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { Login } from './pages/Login';
+import { Dashboard } from './pages/Dashboard';
 import { useContext } from 'react';
 import './App.css';
 
@@ -25,9 +26,7 @@ function App() {
             path="/" 
             element={
               <PrivateRoute>
-                <div className="p-10 text-center text-2xl">
-                  <h1>Bem-vindo ao Sistema de Gestão de Álbuns</h1>
-                </div>
+                <Dashboard />
               </PrivateRoute>
             } 
           />

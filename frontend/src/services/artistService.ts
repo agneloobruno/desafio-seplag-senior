@@ -1,0 +1,17 @@
+import { api } from './api';
+import { Artist, Page } from '../types/artist';
+
+export const artistService = {
+  getAll: async (page: number = 0, nome: string = ''): Promise<Page<Artist>> => {
+    const params: any = {
+      page,
+      size: 10,
+      sort: 'nome,asc',
+    };
+
+    if (nome && nome.trim().length > 0) params.nome = nome;
+
+    const { data } = await api.get<Page<Artist>>('/v1/artistas', { params });
+    return data;
+  }
+};
