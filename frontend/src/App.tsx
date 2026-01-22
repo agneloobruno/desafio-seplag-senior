@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
+import { ArtistDetails } from './pages/ArtistDetails';
 import { useContext } from 'react';
 import './App.css';
 
@@ -29,6 +30,14 @@ function App() {
                 <Dashboard />
               </PrivateRoute>
             } 
+          />
+          <Route
+            path="/artista/:id"
+            element={
+              <PrivateRoute>
+                <ArtistDetails />
+              </PrivateRoute>
+            }
           />
         </Routes>
       </AuthProvider>

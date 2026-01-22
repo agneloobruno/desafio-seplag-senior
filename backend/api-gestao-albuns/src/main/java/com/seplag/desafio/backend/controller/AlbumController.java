@@ -8,6 +8,10 @@ import com.seplag.desafio.backend.repository.AlbumRepository;
 import com.seplag.desafio.backend.repository.ArtistaRepository;
 import com.seplag.desafio.backend.service.MinioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,19 +43,28 @@ public class AlbumController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AlbumResponseDTO>> list() {
-        var albuns = albumRepository.findAll();
+    public ResponseEntity<Page<AlbumResponseDTO>> list(
+            @RequestParam(required = false) Long artistaId,
+            @PageableDefault(size = 10, sort = "ano", direction = Sort.Direction.DESC) Pageable paginacao) {
 
-        // Transformação mágica: Para cada álbum, gera a URL se tiver capa
-        var dtos = albuns.stream().map(album -> {
+        Page<Album> pagina;
+
+        if (artistaId != null) {
+            pagina = albumRepository.findByArtistaId(artistaId, paginacao);
+        } else {
+            pagina = albumRepository.findAll(paginacao);
+        }
+
+        // Converte para DTO e gera URL da capa (MinIO)
+        var dtoPagina = pagina.map(album -> {
             String url = null;
             if (album.getCapa() != null && !album.getCapa().isEmpty()) {
                 url = minioService.getUrl(album.getCapa());
             }
             return new AlbumResponseDTO(album, url);
-        }).toList();
+        });
 
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(dtoPagina);
     }
 
     @PostMapping(value = "/{id}/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import { artistService } from '../services/artistService';
 import { Artist } from '../types/artist';
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export function Dashboard() {
   const [artistas, setArtistas] = useState<Artist[]>([]);
@@ -14,6 +15,7 @@ export function Dashboard() {
   const [busca, setBusca] = useState('');
 
   const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const carregarArtistas = async (paginaParaCarregar: number) => {
     setLoading(true);
@@ -125,7 +127,7 @@ export function Dashboard() {
                         <p>ID: {artista.id}</p>
                       </div>
                       <div className="mt-4">
-                        <span className="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver Álbuns →</span>
+                        <button onClick={() => navigate(`/artista/${artista.id}`)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver Álbuns →</button>
                       </div>
                     </div>
                   </div>
