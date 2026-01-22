@@ -2,30 +2,42 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { albumService } from '../services/albumService';
 import { Album } from '../types/album';
+import { Page } from '../types/artist';
 
 export function ArtistDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [albuns, setAlbuns] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     if (id) {
-      carregarAlbuns(Number(id));
+      carregarAlbuns(Number(id), 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const carregarAlbuns = async (artistaId: number) => {
+  const carregarAlbuns = async (artistaId: number, pagina: number = 0) => {
+    setLoading(true);
     try {
-      const dados = await albumService.getByArtist(artistaId);
+      const dados: Page<Album> = await albumService.getByArtist(artistaId, pagina);
       setAlbuns(dados.content);
+      setPage(dados.number);
+      setTotalPages(dados.totalPages);
     } catch (error) {
       console.error('Erro ao carregar álbuns', error);
       alert('Erro ao carregar álbuns');
     } finally {
       setLoading(false);
     }
+  };
+
+  const mudarPagina = (novaPagina: number) => {
+    if (!id) return;
+    if (novaPagina < 0 || novaPagina >= totalPages) return;
+    carregarAlbuns(Number(id), novaPagina);
   };
 
   return (
@@ -45,7 +57,8 @@ export function ArtistDetails() {
       {loading ? (
         <div>Carregando...</div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {albuns.length === 0 ? (
             <p>Nenhum álbum encontrado para este artista.</p>
           ) : (
@@ -66,7 +79,18 @@ export function ArtistDetails() {
               </div>
             ))
           )}
-        </div>
+          </div>
+
+          <div className="mt-6 flex justify-center items-center gap-3">
+            <button onClick={() => mudarPagina(page - 1)} disabled={page === 0} className="px-3 py-1 border rounded disabled:opacity-50">
+              Anterior
+            </button>
+            <span className="text-gray-700">Página {page + 1} de {totalPages}</span>
+            <button onClick={() => mudarPagina(page + 1)} disabled={page === totalPages - 1 || totalPages === 0} className="px-3 py-1 border rounded disabled:opacity-50">
+              Próxima
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
