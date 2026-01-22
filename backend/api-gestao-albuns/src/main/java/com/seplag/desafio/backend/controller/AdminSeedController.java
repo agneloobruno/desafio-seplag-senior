@@ -21,10 +21,20 @@ public class AdminSeedController {
     @Value("${ADMIN_SEED_ENABLED:false}")
     private boolean adminSeedEnabled;
 
+    // Segredo adicional para proteger uso do seed. Se estiver vazio, o header não é requerido.
+    @Value("${ADMIN_SEED_SECRET:}")
+    private String adminSeedSecret;
+
     @PostMapping("/seed")
-    public ResponseEntity<Void> seedAdmin() {
+    public ResponseEntity<Void> seedAdmin(@org.springframework.web.bind.annotation.RequestHeader(value = "X-ADMIN-SEED-SECRET", required = false) String headerSecret) {
         if (!adminSeedEnabled) {
             return ResponseEntity.status(403).build();
+        }
+
+        if (adminSeedSecret != null && !adminSeedSecret.isEmpty()) {
+            if (headerSecret == null || !adminSeedSecret.equals(headerSecret)) {
+                return ResponseEntity.status(403).build();
+            }
         }
         String adminLogin = "admin";
         String rawPassword = "123"; // senha conhecida
