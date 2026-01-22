@@ -14,4 +14,10 @@ export const artistService = {
     const { data } = await api.get<Page<Artist>>('/v1/artistas', { params });
     return data;
   }
+  ,
+  create: async (nome: string): Promise<Artist> => {
+    const payload = { nome };
+    const { data } = await api.post<Artist>('/v1/artistas', payload);
+    return data;
+  }
 };

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: 'http://localhost:8080', // Endereço da sua API no Docker
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080', // use VITE_API_BASE_URL ou fallback
   headers: {
     'Content-Type': 'application/json',
   },

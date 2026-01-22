@@ -6,6 +6,9 @@ import { AuthContext } from '../context/AuthContext';
 export function Dashboard() {
   const [artistas, setArtistas] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [novoNome, setNovoNome] = useState('');
+  const [creating, setCreating] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [busca, setBusca] = useState('');
@@ -58,8 +61,53 @@ export function Dashboard() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+ Novo Artista</button>
+          <div>
+            <button onClick={() => setShowForm((s) => !s)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              + Novo Artista
+            </button>
+          </div>
         </div>
+
+          {showForm && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!novoNome || novoNome.trim().length === 0) {
+                  alert('Informe o nome do artista');
+                  return;
+                }
+
+                try {
+                  setCreating(true);
+                  await artistService.create(novoNome.trim());
+                  setNovoNome('');
+                  setShowForm(false);
+                  carregarArtistas(0);
+                } catch (err) {
+                  console.error('Erro ao criar artista', err);
+                  alert('Erro ao criar artista. Verifique o backend e o token.');
+                } finally {
+                  setCreating(false);
+                }
+              }}
+              className="mb-6 flex gap-2 items-center"
+            >
+              <input
+                type="text"
+                placeholder="Nome do artista"
+                className="p-2 border border-gray-300 rounded shadow-sm"
+                value={novoNome}
+                onChange={(e) => setNovoNome(e.target.value)}
+                disabled={creating}
+              />
+              <button type="submit" disabled={creating} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                {creating ? 'Salvando...' : 'Salvar'}
+              </button>
+              <button type="button" onClick={() => { setShowForm(false); setNovoNome(''); }} className="px-3 py-2 border rounded">
+                Cancelar
+              </button>
+            </form>
+          )}
 
         {loading ? (
           <div className="text-center py-10">Carregando...</div>
