@@ -1,5 +1,5 @@
-import api from './api';
-import type { LoginResponse } from '../types/auth';
+import { api } from './api';
+import { LoginResponse } from '../types/auth';
 
 export const authService = {
   login: async (login: string, password: string): Promise<LoginResponse> => {
@@ -9,7 +9,7 @@ export const authService = {
   },
   
   logout: () => {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
     window.location.href = '/login';
   },
 };

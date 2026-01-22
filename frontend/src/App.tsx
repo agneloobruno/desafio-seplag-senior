@@ -5,7 +5,7 @@ import { useContext } from 'react';
 import './App.css';
 
 // Componente para proteger rotas privadas
-function PrivateRoute({ children }: { children: React.ReactElement }) {
+function PrivateRoute({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
 
   if (isLoading) return <div>Carregando...</div>;
@@ -27,7 +27,6 @@ function App() {
               <PrivateRoute>
                 <div className="p-10 text-center text-2xl">
                   <h1>Bem-vindo ao Sistema de Gestão de Álbuns</h1>
-                  {/* Aqui entraremos com a Listagem de Artistas depois */}
                 </div>
               </PrivateRoute>
             } 

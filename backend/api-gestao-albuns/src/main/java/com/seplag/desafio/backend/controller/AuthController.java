@@ -55,8 +55,10 @@ public class AuthController {
         // --- Lógica de conversão segura String -> Enum ---
         UserRole role;
         try {
+            // Se role vier nulo ou vazio, padrão é USER
+            String roleStr = data.role() == null || data.role().isBlank() ? "USER" : data.role();
             // Tenta converter o que veio no JSON (ex: "admin") para o Enum (UserRole.ADMIN)
-            role = UserRole.valueOf(data.role().toUpperCase());
+            role = UserRole.valueOf(roleStr.toUpperCase());
         } catch (Exception e) {
             // Se vier qualquer coisa inválida, força ser USER comum
             role = UserRole.USER;

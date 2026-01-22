@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Verifica se já tem token ao recarregar a página
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
     }
@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(u: string, p: string) {
     try {
       const data = await authService.login(u, p);
-      localStorage.setItem('authToken', data.token); // Salva o token
+      localStorage.setItem('token', data.token); // Salva o token
       setIsAuthenticated(true);
     } catch (error) {
       console.error(error);
