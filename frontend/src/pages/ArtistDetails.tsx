@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { albumService } from '../services/albumService';
+import { albumService, albumServiceExtras } from '../services/albumService';
 import { Album } from '../types/album';
 import { Page } from '../types/artist';
 
@@ -16,6 +16,9 @@ export function ArtistDetails() {
   const [novoAno, setNovoAno] = useState<number | ''>('');
   const [novoCapa, setNovoCapa] = useState<File | null>(null);
   const [creatingAlbum, setCreatingAlbum] = useState(false);
+  const [editingAlbumId, setEditingAlbumId] = useState<number | null>(null);
+  const [editingCapaFile, setEditingCapaFile] = useState<File | null>(null);
+  const [uploadingCapa, setUploadingCapa] = useState<number | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -43,6 +46,28 @@ export function ArtistDetails() {
     if (!id) return;
     if (novaPagina < 0 || novaPagina >= totalPages) return;
     carregarAlbuns(Number(id), novaPagina);
+  };
+
+  const handleEditarCapa = async (albumId: number) => {
+    if (!editingCapaFile) {
+      alert('Selecione uma imagem');
+      return;
+    }
+
+    try {
+      setUploadingCapa(albumId);
+      await albumServiceExtras.updateCover(albumId, editingCapaFile);
+      setEditingAlbumId(null);
+      setEditingCapaFile(null);
+      if (id) {
+        carregarAlbuns(Number(id), page);
+      }
+    } catch (err) {
+      console.error('Erro ao atualizar capa', err);
+      alert('Erro ao atualizar capa');
+    } finally {
+      setUploadingCapa(null);
+    }
   };
 
   return (
@@ -112,15 +137,54 @@ export function ArtistDetails() {
             <p>Nenhum álbum encontrado para este artista.</p>
           ) : (
             albuns.map((album) => (
-              <div key={album.id} className="bg-white rounded-lg shadow overflow-hidden group">
-                <div className="w-full bg-gray-200">
+              <div key={album.id} className="bg-white rounded-lg shadow overflow-hidden group hover:shadow-lg transition">
+                <div className="w-full bg-gray-200 relative">
                   {album.capaUrl ? (
-                    // eslint-disable-next-line jsx-a11y/img-redundant-alt
-                    <img src={album.capaUrl} alt={album.titulo} className="w-full h-48 object-cover group-hover:opacity-75" />
+                    <img src={album.capaUrl} alt={album.titulo} className="w-full h-48 object-cover group-hover:opacity-75 transition" />
                   ) : (
                     <div className="w-full h-48 flex items-center justify-center text-gray-400">Sem Capa</div>
                   )}
+                  {/* Botão para editar capa */}
+                  <button
+                    onClick={() => setEditingAlbumId(album.id)}
+                    className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition"
+                  >
+                    📷 Editar
+                  </button>
                 </div>
+
+                {/* Formulário de edição de capa */}
+                {editingAlbumId === album.id && (
+                  <div className="p-2 bg-blue-50 border-t border-blue-200">
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setEditingCapaFile(e.target.files?.[0] || null)}
+                        className="flex-1 text-xs"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditarCapa(album.id)}
+                        disabled={!editingCapaFile || uploadingCapa === album.id}
+                        className="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 disabled:opacity-50"
+                      >
+                        {uploadingCapa === album.id ? 'Enviando...' : 'Enviar'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingAlbumId(null);
+                          setEditingCapaFile(null);
+                        }}
+                        className="bg-gray-400 text-white px-2 py-1 rounded text-xs hover:bg-gray-500"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-4">
                   <h3 className="text-lg font-medium text-gray-900">{album.titulo}</h3>
                   <p className="text-sm text-gray-500">{album.ano}</p>

@@ -34,6 +34,7 @@ minio:
   access-key: minioadmin
   secret-key: minioadmin
   bucket-name: capas-albuns
+  public-url: ${MINIO_PUBLIC_URL:http://localhost:9000}
 
 # Configura��o do Actuator (Health Checks - Exig�ncia S�nior)
 management:

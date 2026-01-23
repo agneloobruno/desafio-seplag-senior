@@ -79,6 +79,7 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET_NAME: capas-albuns
+      MINIO_PUBLIC_URL: http://localhost:9000
       API_SECURITY_TOKEN_SECRET: minha-senha-super-secreta-prod
     networks:
       - desafio-network

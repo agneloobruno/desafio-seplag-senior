@@ -24,6 +24,9 @@ public class MinioService {
     @Value("${minio.bucket-name}")
     private String bucketName;
 
+    @Value("${minio.public-url:http://localhost:9000}")
+    private String minioPublicUrl;
+
     public String upload(MultipartFile file) {
         try {
             boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
@@ -52,7 +55,7 @@ public class MinioService {
     // --- NOVO MÉTODO: Gerar URL de visualização ---
     public String getUrl(String fileName) {
         try {
-            return minioClient.getPresignedObjectUrl(
+            String presignedUrl = minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.GET)
                             .bucket(bucketName)
@@ -60,6 +63,10 @@ public class MinioService {
                             .expiry(30, TimeUnit.MINUTES) // Link válido por 30 minutos (conforme edital)
                             .build()
             );
+            
+            // Substitui o endpoint interno (minio:9000) pela URL pública acessível
+            // Isso permite que o frontend no navegador acesse a imagem
+            return presignedUrl.replace("http://minio:9000", minioPublicUrl);
         } catch (Exception e) {
             // Se der erro (ex: arquivo não existe), retorna null ou loga o erro
             e.printStackTrace();
