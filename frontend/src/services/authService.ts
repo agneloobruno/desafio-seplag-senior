@@ -7,9 +7,30 @@ export const authService = {
     const { data } = await api.post<LoginResponse>('/v1/auth/login', { login, senha: password });
     return data;
   },
-  
+
+  refreshToken: async (): Promise<LoginResponse> => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        throw new Error('Refresh token não encontrado');
+      }
+      const { data } = await api.post<LoginResponse>('/v1/auth/refresh', { refreshToken });
+      return data;
+    } catch (error) {
+      console.error('Erro ao renovar token:', error);
+      throw error;
+    }
+  },
+
+  hasValidToken: (): boolean => {
+    const token = localStorage.getItem('token');
+    const refreshToken = localStorage.getItem('refreshToken');
+    return !!(token || refreshToken);
+  },
+
   logout: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     window.location.href = '/login';
   },
 };
