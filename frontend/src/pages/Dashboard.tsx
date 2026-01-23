@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
-import { artistService } from '../services/artistService';
+import { artistService, artistServiceExtras } from '../services/artistService';
 import { Artist } from '../types/artist';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +13,8 @@ export function Dashboard() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [busca, setBusca] = useState('');
+  const [uploadingFoto, setUploadingFoto] = useState<number | null>(null);
+  const [novaFoto, setNovaFoto] = useState<File | null>(null);
 
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -40,6 +42,25 @@ export function Dashboard() {
   const mudarPagina = (novaPagina: number) => {
     if (novaPagina >= 0 && novaPagina < totalPages) {
       carregarArtistas(novaPagina);
+    }
+  };
+
+  const handleUploadFoto = async (artistaId: number) => {
+    if (!novaFoto) {
+      alert('Selecione uma imagem');
+      return;
+    }
+
+    try {
+      setUploadingFoto(artistaId);
+      await artistServiceExtras.uploadFoto(artistaId, novaFoto);
+      setNovaFoto(null);
+      carregarArtistas(page);
+    } catch (err) {
+      console.error('Erro ao fazer upload da foto', err);
+      alert('Erro ao fazer upload da foto');
+    } finally {
+      setUploadingFoto(null);
     }
   };
 
@@ -120,15 +141,56 @@ export function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artistas.map((artista) => (
-                  <div key={artista.id} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition cursor-pointer border border-gray-200">
+                  <div key={artista.id} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition border border-gray-200">
+                    <div className="w-full bg-gray-200">
+                      {artista.fotoUrl ? (
+                        <img src={artista.fotoUrl} alt={artista.nome} className="w-full h-48 object-cover" />
+                      ) : (
+                        <div className="w-full h-48 flex items-center justify-center text-gray-400">Sem Foto</div>
+                      )}
+                    </div>
                     <div className="px-4 py-5 sm:p-6">
                       <h3 className="text-lg leading-6 font-medium text-gray-900">{artista.nome}</h3>
-                      <div className="mt-2 max-w-xl text-sm text-gray-500">
-                        <p>ID: {artista.id}</p>
+                      <div className="mt-4 flex gap-2">
+                        <button 
+                          onClick={() => {
+                            if (uploadingFoto === artista.id) {
+                              handleUploadFoto(artista.id);
+                            } else {
+                              setUploadingFoto(artista.id);
+                            }
+                          }}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          {uploadingFoto === artista.id ? '📷 Adicionar Foto' : '📷 Foto'}
+                        </button>
+                        <button onClick={() => navigate(`/artista/${artista.id}`)} className="text-green-600 hover:text-green-800 text-sm font-medium">
+                          Ver Álbuns →
+                        </button>
                       </div>
-                      <div className="mt-4">
-                        <button onClick={() => navigate(`/artista/${artista.id}`)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver Álbuns →</button>
-                      </div>
+                      {uploadingFoto === artista.id && (
+                        <div className="mt-3 flex gap-2">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={(e) => setNovaFoto(e.target.files?.[0] || null)}
+                            className="flex-1 text-sm"
+                          />
+                          <button 
+                            onClick={() => handleUploadFoto(artista.id)}
+                            disabled={!novaFoto || uploadingFoto === artista.id}
+                            className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            Enviar
+                          </button>
+                          <button 
+                            onClick={() => setUploadingFoto(null)}
+                            className="bg-gray-400 text-white px-3 py-1 rounded text-sm hover:bg-gray-500"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

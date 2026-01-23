@@ -34,7 +34,7 @@ class ArtistaServiceTest {
     void deveCriarArtistaComSucesso() {
         // ARRANGE (Cenário)
         ArtistaRequestDTO dto = new ArtistaRequestDTO("Legião Urbana");
-        Artista artistaSalvo = new Artista(1L, "Legião Urbana", null);
+        Artista artistaSalvo = new Artista(1L, "Legião Urbana", null, null);
 
         // Quando o repository.save for chamado com qualquer artista, retorne o 'artistaSalvo'
         when(repository.save(any(Artista.class))).thenReturn(artistaSalvo);
@@ -57,7 +57,7 @@ class ArtistaServiceTest {
         // ARRANGE
         Pageable pageable = Pageable.unpaged();
         String filtro = "Rock";
-        Page<Artista> paginaMock = new PageImpl<>(List.of(new Artista(1L, "Capital Rock", null)));
+        Page<Artista> paginaMock = new PageImpl<>(List.of(new Artista(1L, "Capital Rock", null, null)));
 
         when(repository.findByNomeContainingIgnoreCase(filtro, pageable)).thenReturn(paginaMock);
 
