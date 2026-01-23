@@ -55,20 +55,11 @@ public class MinioService {
     // --- NOVO MÉTODO: Gerar URL de visualização ---
     public String getUrl(String fileName) {
         try {
-            String presignedUrl = minioClient.getPresignedObjectUrl(
-                    GetPresignedObjectUrlArgs.builder()
-                            .method(Method.GET)
-                            .bucket(bucketName)
-                            .object(fileName)
-                            .expiry(30, TimeUnit.MINUTES) // Link válido por 30 minutos (conforme edital)
-                            .build()
-            );
-            
-            // Substitui o endpoint interno (minio:9000) pela URL pública acessível
-            // Isso permite que o frontend no navegador acesse a imagem
-            return presignedUrl.replace("http://minio:9000", minioPublicUrl);
+            // Como o bucket é público (definido no docker-compose com mc anonymous set public),
+            // não precisamos de URL assinada. Retornamos URL pública direta.
+            return String.format("%s/%s/%s", minioPublicUrl, bucketName, fileName);
         } catch (Exception e) {
-            // Se der erro (ex: arquivo não existe), retorna null ou loga o erro
+            // Se der erro, retorna null ou loga o erro
             e.printStackTrace();
             return null;
         }
