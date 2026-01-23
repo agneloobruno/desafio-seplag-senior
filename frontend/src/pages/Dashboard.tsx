@@ -13,7 +13,10 @@ export function Dashboard() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [busca, setBusca] = useState('');
-  const [uploadingFoto, setUploadingFoto] = useState<number | null>(null);
+  // `showUploadFor` controla qual artista está com o campo de upload visível
+  // `uploadingFotoId` indica se um upload está em progresso para um artista
+  const [showUploadFor, setShowUploadFor] = useState<number | null>(null);
+  const [uploadingFotoId, setUploadingFotoId] = useState<number | null>(null);
   const [novaFoto, setNovaFoto] = useState<File | null>(null);
 
   const { logout } = useContext(AuthContext);
@@ -52,15 +55,41 @@ export function Dashboard() {
     }
 
     try {
-      setUploadingFoto(artistaId);
+      setUploadingFotoId(artistaId);
       await artistServiceExtras.uploadFoto(artistaId, novaFoto);
       setNovaFoto(null);
+      setShowUploadFor(null);
       carregarArtistas(page);
     } catch (err) {
       console.error('Erro ao fazer upload da foto', err);
       alert('Erro ao fazer upload da foto');
     } finally {
-      setUploadingFoto(null);
+      setUploadingFotoId(null);
+    }
+  };
+
+  // Converte HEIC/HEIF para JPEG no cliente antes de enviar
+  const convertIfHeic = async (file: File | null) => {
+    if (!file) {
+      setNovaFoto(null);
+      return;
+    }
+
+    const lower = file.name.toLowerCase();
+    if (file.type === 'image/heic' || lower.endsWith('.heic') || lower.endsWith('.heif')) {
+      try {
+        const module = await import('heic2any');
+        const heic2any = module.default ?? module;
+        const convertedBlob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+        const jpgFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'), { type: 'image/jpeg' });
+        setNovaFoto(jpgFile);
+      } catch (err) {
+        console.error('Erro convertendo HEIC', err);
+        alert('Não foi possível converter o arquivo HEIC. Converta para JPG/PNG e tente novamente.');
+        setNovaFoto(null);
+      }
+    } else {
+      setNovaFoto(file);
     }
   };
 
@@ -141,7 +170,7 @@ export function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artistas.map((artista) => (
-                  <div key={artista.id} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition border border-gray-200">
+                  <div key={artista.id} className="bg-white overflow-hidden shadow rounded-lg transform transition hover:-translate-y-1 hover:shadow-md border border-gray-200">
                     <div className="w-full bg-gray-200">
                       {artista.fotoUrl ? (
                         <img src={artista.fotoUrl} alt={artista.nome} className="w-full h-48 object-cover" />
@@ -153,38 +182,32 @@ export function Dashboard() {
                       <h3 className="text-lg leading-6 font-medium text-gray-900">{artista.nome}</h3>
                       <div className="mt-4 flex gap-2">
                         <button 
-                          onClick={() => {
-                            if (uploadingFoto === artista.id) {
-                              handleUploadFoto(artista.id);
-                            } else {
-                              setUploadingFoto(artista.id);
-                            }
-                          }}
+                          onClick={() => setShowUploadFor(showUploadFor === artista.id ? null : artista.id)}
                           className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                         >
-                          {uploadingFoto === artista.id ? '📷 Adicionar Foto' : '📷 Foto'}
+                          {showUploadFor === artista.id ? '📷 Adicionar Foto' : '📷 Foto'}
                         </button>
                         <button onClick={() => navigate(`/artista/${artista.id}`)} className="text-green-600 hover:text-green-800 text-sm font-medium">
                           Ver Álbuns →
                         </button>
                       </div>
-                      {uploadingFoto === artista.id && (
+                      {showUploadFor === artista.id && (
                         <div className="mt-3 flex gap-2">
                           <input 
                             type="file" 
                             accept="image/*"
-                            onChange={(e) => setNovaFoto(e.target.files?.[0] || null)}
+                            onChange={(e) => { const f = e.target.files?.[0] || null; convertIfHeic(f); }}
                             className="flex-1 text-sm"
                           />
                           <button 
                             onClick={() => handleUploadFoto(artista.id)}
-                            disabled={!novaFoto || uploadingFoto === artista.id}
+                            disabled={!novaFoto || uploadingFotoId === artista.id}
                             className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
                           >
-                            Enviar
+                            {uploadingFotoId === artista.id ? 'Enviando...' : 'Enviar'}
                           </button>
                           <button 
-                            onClick={() => setUploadingFoto(null)}
+                            onClick={() => setShowUploadFor(null)}
                             className="bg-gray-400 text-white px-3 py-1 rounded text-sm hover:bg-gray-500"
                           >
                             Cancelar

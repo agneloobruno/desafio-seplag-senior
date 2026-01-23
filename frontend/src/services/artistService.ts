@@ -25,8 +25,9 @@ export const artistServiceExtras = {
   uploadFoto: async (artistaId: number, file: File) => {
     const form = new FormData();
     form.append('file', file);
+    // Remove the default Content-Type so the browser sets the multipart boundary header
     const { data } = await api.post(`/v1/artistas/${artistaId}/foto`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined as any },
     });
     return data;
   }
