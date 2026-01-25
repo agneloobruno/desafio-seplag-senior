@@ -3,7 +3,8 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { ArtistDetails } from './pages/ArtistDetails';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { connectWebsocket } from './services/websocket';
 import './App.css';
 
 // Componente para proteger rotas privadas
@@ -16,9 +17,25 @@ function PrivateRoute({ children }: { children: any }) {
 }
 
 function App() {
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    const disconnect = connectWebsocket((msg: string) => {
+      setToast(msg);
+      setTimeout(() => setToast(null), 5000);
+    });
+
+    return () => disconnect && disconnect();
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
+        {toast && (
+          <div className="fixed top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded shadow">
+            {toast}
+          </div>
+        )}
         <Routes>
           <Route path="/login" element={<Login />} />
           

@@ -76,6 +76,9 @@ public class SecurityConfig {
                         // Define que apenas ADMIN pode fazer upload de capa de álbum
                         .requestMatchers(HttpMethod.POST, "/v1/albuns/*/capa").hasRole("ADMIN")
 
+                        // Libera o acesso ao endpoint de WebSocket/STOMP usado pelo frontend (handshake e info)
+                        .requestMatchers("/ws-albuns/**").permitAll()
+
                         // Diz que qualquer outra requisição não listada acima exige que o usuário esteja autenticado
                         .anyRequest().authenticated()
                 )
@@ -93,14 +96,17 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         // Cria uma nova instância de configuração
         CorsConfiguration configuration = new CorsConfiguration();
-        // Define quais origens (domínios) são permitidas. '*' aceita qualquer lugar (bom para dev, cuidado em prod)
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://127.0.0.1:8080", "*"));
+        // Define quais origens (domínios) são permitidas.
+        // Especifica o origin do dev server do frontend e alguns locais úteis
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080", "http://127.0.0.1:8080"));
         // Define quais métodos HTTP (verbos) o navegador pode usar
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
         // Define quais cabeçalhos o navegador pode enviar (Authorization é essencial para o Bearer Token)
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-auth-token"));
         // Define quais cabeçalhos da resposta o navegador/frontend consegue ler
         configuration.setExposedHeaders(List.of("x-auth-token"));
+        // Permite que o navegador envie credenciais (cookies/auth headers) em requisições CORS
+        configuration.setAllowCredentials(true);
 
         // Cria a fonte de configuração baseada em URL
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

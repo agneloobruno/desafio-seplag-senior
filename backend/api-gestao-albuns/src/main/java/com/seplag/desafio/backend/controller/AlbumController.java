@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class AlbumController {
     private final AlbumRepository albumRepository;
     private final ArtistaRepository artistaRepository;
     private final MinioService minioService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
     public ResponseEntity<AlbumResponseDTO> create(@RequestBody AlbumRequestDTO data, UriComponentsBuilder uriBuilder) {
@@ -36,6 +38,11 @@ public class AlbumController {
 
         Album album = new Album(data.titulo(), data.ano(), artista);
         albumRepository.save(album);
+
+        // --- LÓGICA WEBSOCKET ---
+        String mensagem = "Novo álbum lançado: " + album.getTitulo() + " (" + album.getArtista().getNome() + ")";
+        messagingTemplate.convertAndSend("/topic/albuns", mensagem);
+        // ------------------------
 
         var uri = uriBuilder.path("/albuns/{id}").buildAndExpand(album.getId()).toUri();
         // Na criação, ainda não tem capa, então a URL é null
