@@ -122,19 +122,23 @@ export function Dashboard() {
               <div className="text-center text-gray-500 py-10">Nenhum artista encontrado.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {artistas.map((artista) => (
-                  <div key={artista.id} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition cursor-pointer border border-gray-200">
-                    <div className="px-4 py-5 sm:p-6">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">{artista.nome}</h3>
-                      <div className="mt-2 max-w-xl text-sm text-gray-500">
-                        <p>ID: {artista.id}</p>
-                      </div>
-                      <div className="mt-4">
-                        <button onClick={() => navigate(`/artista/${artista.id}`)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver Álbuns →</button>
+                {artistas.map((artista) => {
+                  const imgSrc = artista.fotoUrl ?? `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(artista.nome)}`;
+                  return (
+                    <div key={artista.id} className="bg-white overflow-hidden rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-gray-200">
+                      <div className="flex items-center gap-4 px-4 py-5 sm:p-6">
+                        <img src={imgSrc} alt={artista.nome} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+                        <div className="flex-1">
+                          <h3 className="text-lg leading-6 font-medium text-gray-900">{artista.nome}</h3>
+                          <div className="mt-1 text-sm text-gray-500">ID: {artista.id}</div>
+                        </div>
+                        <div>
+                          <button onClick={() => navigate(`/artista/${artista.id}`)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver Álbuns →</button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 

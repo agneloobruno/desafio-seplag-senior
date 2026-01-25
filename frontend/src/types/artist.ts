@@ -1,6 +1,8 @@
 export interface Artist {
   id: number;
   nome: string;
+  // URL opcional da foto do artista
+  fotoUrl?: string;
 }
 
 export interface Page<T> {

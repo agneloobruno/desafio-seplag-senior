@@ -44,7 +44,6 @@ export function ArtistDetails() {
     if (novaPagina < 0 || novaPagina >= totalPages) return;
     carregarAlbuns(Number(id), novaPagina);
   };
-
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <button
@@ -54,7 +53,7 @@ export function ArtistDetails() {
         ← Voltar para Artistas
       </button>
 
-        <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Discografia</h1>
         <button onClick={() => setShowAlbumForm((s) => !s)} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Novo Álbum</button>
       </div>
@@ -86,7 +85,9 @@ export function ArtistDetails() {
               carregarAlbuns(Number(id), 0);
             } catch (err) {
               console.error('Erro ao criar álbum', err);
-              alert('Erro ao criar álbum. Verifique o backend e o token.');
+              if (!localStorage.getItem('sessionExpiredMessage')) {
+                alert('Erro ao criar álbum. Verifique o backend e o token.');
+              }
             } finally {
               setCreatingAlbum(false);
             }
@@ -104,33 +105,31 @@ export function ArtistDetails() {
       )}
 
       {loading ? (
-        <div>Carregando...</div>
-      try {
-        setIsLoading(true);
-        await albumService.create({ titulo: title.trim(), ano: Number(year), artistaId: artistaId });
-        setTitle('');
-        setYear('');
-        loadAlbums();
-      } catch (error) {
-        console.error('Erro ao criar álbum', error);
-        if (!localStorage.getItem('sessionExpiredMessage')) {
-          alert('Erro ao criar álbum. Verifique o backend e o token.');
-        }
-      } finally {
-                    // eslint-disable-next-line jsx-a11y/img-redundant-alt
-                    <img src={album.capaUrl} alt={album.titulo} className="w-full h-48 object-cover group-hover:opacity-75" />
-                  ) : (
-                    <div className="w-full h-48 flex items-center justify-center text-gray-400">Sem Capa</div>
-                  )}
+        <div className="text-center py-10">Carregando...</div>
+      ) : (
+        <>
+          {albuns.length === 0 ? (
+            <div className="text-center text-gray-500 py-10">Nenhum álbum encontrado.</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {albuns.map((album) => (
+                <div key={album.id} className="bg-white overflow-hidden rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg border border-gray-200">
+                  <div className="group">
+                    {album.capaUrl ? (
+                      // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                      <img src={album.capaUrl} alt={album.titulo} className="w-full h-48 object-cover group-hover:opacity-75" />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center text-gray-400">Sem Capa</div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-medium text-gray-900">{album.titulo}</h3>
+                    <p className="text-sm text-gray-500">{album.ano}</p>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-medium text-gray-900">{album.titulo}</h3>
-                  <p className="text-sm text-gray-500">{album.ano}</p>
-                </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
-          </div>
 
           <div className="mt-6 flex justify-center items-center gap-3">
             <button onClick={() => mudarPagina(page - 1)} disabled={page === 0} className="px-3 py-1 border rounded disabled:opacity-50">
