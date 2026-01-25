@@ -18,6 +18,7 @@ export function Dashboard() {
   const [showUploadFor, setShowUploadFor] = useState<number | null>(null);
   const [uploadingFotoId, setUploadingFotoId] = useState<number | null>(null);
   const [novaFoto, setNovaFoto] = useState<File | null>(null);
+  const [convertingNovaFoto, setConvertingNovaFoto] = useState(false);
 
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ export function Dashboard() {
 
     const lower = file.name.toLowerCase();
     if (file.type === 'image/heic' || lower.endsWith('.heic') || lower.endsWith('.heif')) {
+      setConvertingNovaFoto(true);
       try {
         const module = await import('heic2any');
         const heic2any = module.default ?? module;
@@ -87,6 +89,8 @@ export function Dashboard() {
         console.error('Erro convertendo HEIC', err);
         alert('Não foi possível converter o arquivo HEIC. Converta para JPG/PNG e tente novamente.');
         setNovaFoto(null);
+      } finally {
+        setConvertingNovaFoto(false);
       }
     } else {
       setNovaFoto(file);
@@ -201,10 +205,10 @@ export function Dashboard() {
                           />
                           <button 
                             onClick={() => handleUploadFoto(artista.id)}
-                            disabled={!novaFoto || uploadingFotoId === artista.id}
+                            disabled={!novaFoto || uploadingFotoId === artista.id || convertingNovaFoto}
                             className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
                           >
-                            {uploadingFotoId === artista.id ? 'Enviando...' : 'Enviar'}
+                            {uploadingFotoId === artista.id ? 'Enviando...' : convertingNovaFoto ? 'Convertendo...' : 'Enviar'}
                           </button>
                           <button 
                             onClick={() => setShowUploadFor(null)}

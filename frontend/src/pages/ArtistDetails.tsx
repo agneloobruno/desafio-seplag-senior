@@ -16,9 +16,11 @@ export function ArtistDetails() {
   const [novoAno, setNovoAno] = useState<number | ''>('');
   const [novoCapa, setNovoCapa] = useState<File | null>(null);
   const [creatingAlbum, setCreatingAlbum] = useState(false);
+  const [novoCapaConverting, setNovoCapaConverting] = useState(false);
   const [editingAlbumId, setEditingAlbumId] = useState<number | null>(null);
   const [editingCapaFile, setEditingCapaFile] = useState<File | null>(null);
   const [uploadingCapa, setUploadingCapa] = useState<number | null>(null);
+  const [editingCapaConverting, setEditingCapaConverting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -39,6 +41,28 @@ export function ArtistDetails() {
       alert('Erro ao carregar álbuns');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Converte HEIC/HEIF para JPEG no cliente antes de enviar
+  const convertIfHeicToJpeg = async (file: File | null, setConverting?: (v: boolean) => void): Promise<File | null> => {
+    if (!file) return null;
+    const lower = file.name.toLowerCase();
+    const isHeic = file.type === 'image/heic' || lower.endsWith('.heic') || lower.endsWith('.heif');
+    if (!isHeic) return file;
+    if (setConverting) setConverting(true);
+    try {
+      const module = await import('heic2any');
+      const heic2any = module.default ?? module;
+      const convertedBlob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+      const jpgFile = new File([convertedBlob], file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'), { type: 'image/jpeg' });
+      return jpgFile;
+    } catch (err) {
+      console.error('Erro convertendo HEIC', err);
+      alert('Não foi possível converter o arquivo HEIC. Converta para JPG/PNG e tente novamente.');
+      return null;
+    } finally {
+      if (setConverting) setConverting(false);
     }
   };
 
@@ -120,9 +144,17 @@ export function ArtistDetails() {
         >
           <input type="text" placeholder="Título" value={novoTitulo} onChange={(e) => setNovoTitulo(e.target.value)} className="p-2 border rounded" />
           <input type="number" placeholder="Ano" value={novoAno as any} onChange={(e) => setNovoAno(e.target.value ? Number(e.target.value) : '')} className="p-2 border rounded" />
-          <input type="file" accept="image/*" onChange={(e) => setNovoCapa(e.target.files && e.target.files[0] ? e.target.files[0] : null)} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
+              const converted = await convertIfHeicToJpeg(file, setNovoCapaConverting);
+              setNovoCapa(converted);
+            }}
+          />
           <div className="flex gap-2">
-            <button type="submit" disabled={creatingAlbum} className="bg-green-600 text-white px-4 py-2 rounded">{creatingAlbum ? 'Salvando...' : 'Salvar'}</button>
+            <button type="submit" disabled={creatingAlbum || novoCapaConverting} className="bg-green-600 text-white px-4 py-2 rounded">{creatingAlbum ? 'Salvando...' : novoCapaConverting ? 'Convertendo...' : 'Salvar'}</button>
             <button type="button" onClick={() => { setShowAlbumForm(false); setNovoTitulo(''); setNovoAno(''); setNovoCapa(null); }} className="px-3 py-2 border rounded">Cancelar</button>
           </div>
         </form>
@@ -160,17 +192,21 @@ export function ArtistDetails() {
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setEditingCapaFile(e.target.files?.[0] || null)}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0] || null;
+                          const converted = await convertIfHeicToJpeg(file, setEditingCapaConverting);
+                          setEditingCapaFile(converted);
+                        }}
                         className="flex-1 text-xs"
                       />
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditarCapa(album.id)}
-                        disabled={!editingCapaFile || uploadingCapa === album.id}
+                        disabled={!editingCapaFile || uploadingCapa === album.id || editingCapaConverting}
                         className="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 disabled:opacity-50"
                       >
-                        {uploadingCapa === album.id ? 'Enviando...' : 'Enviar'}
+                        {uploadingCapa === album.id ? 'Enviando...' : editingCapaConverting ? 'Convertendo...' : 'Enviar'}
                       </button>
                       <button
                         onClick={() => {

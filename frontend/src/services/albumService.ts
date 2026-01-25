@@ -21,7 +21,7 @@ export const albumServiceExtras = {
     const form = new FormData();
     form.append('file', file);
     const { data } = await api.post(`/v1/albuns/${albumId}/capa`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined as any },
     });
     return data;
   },
@@ -30,7 +30,7 @@ export const albumServiceExtras = {
     const form = new FormData();
     form.append('file', file);
     const { data } = await api.put(`/v1/albuns/${albumId}/capa`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined as any },
     });
     return data;
   }
