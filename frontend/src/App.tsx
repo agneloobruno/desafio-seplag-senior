@@ -18,6 +18,16 @@ function PrivateRoute({ children }: { children: any }) {
 
 function App() {
   const [toast, setToast] = useState<string | null>(null);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const msg = localStorage.getItem('sessionExpiredMessage');
+    if (msg) {
+      setSessionNotice(msg);
+      localStorage.removeItem('sessionExpiredMessage');
+      setTimeout(() => setSessionNotice(null), 5000);
+    }
+  }, []);
 
   useEffect(() => {
     const disconnect = connectWebsocket((msg: string) => {
@@ -34,6 +44,11 @@ function App() {
         {toast && (
           <div className="fixed top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded shadow">
             {toast}
+          </div>
+        )}
+        {sessionNotice && (
+          <div className="fixed top-4 left-4 z-50 bg-red-600 text-white px-4 py-2 rounded shadow">
+            {sessionNotice}
           </div>
         )}
         <Routes>

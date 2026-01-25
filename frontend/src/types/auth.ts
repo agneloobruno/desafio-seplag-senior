@@ -5,6 +5,7 @@ export interface User {
 
 export interface LoginResponse {
   token: string;
+  refreshToken?: string;
   // O backend pode retornar informações adicionais
   // Ajuste conforme o JSON real de resposta do endpoint /auth/login
 }

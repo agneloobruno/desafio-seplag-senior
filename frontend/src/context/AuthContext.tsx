@@ -1,6 +1,16 @@
 import { createContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../services/authService';
+import { api } from '../services/api';
+
+function parseJwt(token: string) {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload));
+  } catch {
+    return null;
+  }
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -16,18 +26,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verifica se já tem token ao recarregar a página
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
+    // Verifica token e tenta refresh se necessário
+    (async () => {
+      const token = localStorage.getItem('token');
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      if (!token) {
+        setIsAuthenticated(false);
+        setIsLoading(false);
+        return;
+      }
+
+      const payload = parseJwt(token);
+      const now = Math.floor(Date.now() / 1000);
+
+      if (payload && payload.exp && payload.exp > now) {
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // token expirado -> tenta refresh
+      if (refreshToken) {
+        try {
+          const newToken = await authService.refreshToken(refreshToken);
+          localStorage.setItem('token', newToken);
+          setIsAuthenticated(true);
+        } catch (e) {
+          authService.logoutWithMessage('Ficou muito tempo inativo e precisa logar de novo');
+          setIsAuthenticated(false);
+        }
+      } else {
+        authService.logoutWithMessage('Ficou muito tempo inativo e precisa logar de novo');
+        setIsAuthenticated(false);
+      }
+
+      setIsLoading(false);
+    })();
   }, []);
 
   async function login(u: string, p: string) {
     try {
       const data = await authService.login(u, p);
       localStorage.setItem('token', data.token); // Salva o token
+      if ((data as any).refreshToken) localStorage.setItem('refreshToken', (data as any).refreshToken);
       setIsAuthenticated(true);
     } catch (error) {
       console.error(error);
