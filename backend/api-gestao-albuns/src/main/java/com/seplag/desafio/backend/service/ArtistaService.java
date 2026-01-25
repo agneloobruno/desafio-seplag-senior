@@ -29,4 +29,12 @@ public class ArtistaService {
         }
         return repository.findAll(pageable);
     }
+
+    public java.util.Optional<Artista> findById(Long id) {
+        return repository.findById(id);
+    }
+
+    public Artista save(Artista artista) {
+        return repository.save(artista);
+    }
 }

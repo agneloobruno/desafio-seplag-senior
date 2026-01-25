@@ -75,6 +75,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/artistas", "/v1/albuns", "/v1/musicas").hasRole("ADMIN")
                         // Define que apenas ADMIN pode fazer upload de capa de álbum
                         .requestMatchers(HttpMethod.POST, "/v1/albuns/*/capa").hasRole("ADMIN")
+                        // Define que apenas ADMIN pode fazer upload de foto de artista
+                        .requestMatchers(HttpMethod.POST, "/v1/artistas/*/foto").hasRole("ADMIN")
 
                         // Libera o acesso ao endpoint de WebSocket/STOMP usado pelo frontend (handshake e info)
                         .requestMatchers("/ws-albuns/**").permitAll()

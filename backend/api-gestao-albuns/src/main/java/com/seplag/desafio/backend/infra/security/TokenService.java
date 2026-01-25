@@ -24,6 +24,8 @@ public class TokenService {
                     .withIssuer("auth-api")
                     // O Lombok @Data gerou esse método getLogin() automaticamente na classe Usuario
                     .withSubject(usuario.getLogin())
+                    // Adiciona a role do usuário como claim para o frontend poder usar
+                    .withClaim("role", usuario.getRole() != null ? usuario.getRole().name() : "USER")
                     .withExpiresAt(genExpirationDate(5))
                     .sign(algorithm);
         } catch (JWTCreationException exception) {

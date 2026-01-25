@@ -20,4 +20,13 @@ export const artistService = {
     const { data } = await api.post<Artist>('/v1/artistas', payload);
     return data;
   }
+  ,
+  uploadPhoto: async (artistaId: number, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    const { data } = await api.post(`/v1/artistas/${artistaId}/foto`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  }
 };
