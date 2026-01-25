@@ -24,9 +24,12 @@ export function Dashboard() {
       setArtistas(dados.content);
       setTotalPages(dados.totalPages);
       setPage(dados.number);
-    } catch (error) {
+      } catch (error) {
       console.error('Erro ao carregar artistas', error);
-      alert('Erro ao buscar dados. Verifique se o backend está rodando.');
+      // Se a sessão expirou, o interceptor já direcionou para login e mostrou mensagem.
+      if (!localStorage.getItem('sessionExpiredMessage')) {
+        alert('Erro ao buscar dados. Verifique se o backend está rodando.');
+      }
     } finally {
       setLoading(false);
     }

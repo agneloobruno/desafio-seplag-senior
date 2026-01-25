@@ -105,16 +105,18 @@ export function ArtistDetails() {
 
       {loading ? (
         <div>Carregando...</div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {albuns.length === 0 ? (
-            <p>Nenhum álbum encontrado para este artista.</p>
-          ) : (
-            albuns.map((album) => (
-              <div key={album.id} className="bg-white rounded-lg shadow overflow-hidden group">
-                <div className="w-full bg-gray-200">
-                  {album.capaUrl ? (
+      try {
+        setIsLoading(true);
+        await albumService.create({ titulo: title.trim(), ano: Number(year), artistaId: artistaId });
+        setTitle('');
+        setYear('');
+        loadAlbums();
+      } catch (error) {
+        console.error('Erro ao criar álbum', error);
+        if (!localStorage.getItem('sessionExpiredMessage')) {
+          alert('Erro ao criar álbum. Verifique o backend e o token.');
+        }
+      } finally {
                     // eslint-disable-next-line jsx-a11y/img-redundant-alt
                     <img src={album.capaUrl} alt={album.titulo} className="w-full h-48 object-cover group-hover:opacity-75" />
                   ) : (
