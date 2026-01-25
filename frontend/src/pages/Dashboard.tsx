@@ -123,22 +123,25 @@ export function Dashboard() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artistas.map((artista) => {
-                  const imgSrc = artista.fotoUrl ?? `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(artista.nome)}`;
-                  return (
-                    <div key={artista.id} className="bg-white overflow-hidden rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg cursor-pointer border border-gray-200">
-                      <div className="flex items-center gap-4 px-4 py-5 sm:p-6">
-                        <img src={imgSrc} alt={artista.nome} className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
-                        <div className="flex-1">
-                          <h3 className="text-lg leading-6 font-medium text-gray-900">{artista.nome}</h3>
-                          <div className="mt-1 text-sm text-gray-500">ID: {artista.id}</div>
+                      const imgSrc = artista.fotoUrl ?? `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(artista.nome)}`;
+                      return (
+                        <div key={artista.id} className="flex justify-center">
+                          <div
+                            onClick={() => navigate(`/artista/${artista.id}`)}
+                            className="group cursor-pointer rounded-xl overflow-hidden border border-gray-200"
+                            style={{ width: 180 }}
+                          >
+                            <div className="relative aspect-square w-full transform transition-all duration-200 ease-in-out group-hover:scale-105">
+                              <img src={imgSrc} alt={artista.nome} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-200" />
+                              <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <span className="text-white text-sm font-medium bg-black/50 px-2 py-1 rounded">{artista.nome}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <button onClick={() => navigate(`/artista/${artista.id}`)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver Álbuns →</button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
               </div>
             )}
 

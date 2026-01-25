@@ -113,18 +113,23 @@ export function ArtistDetails() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {albuns.map((album) => (
-                <div key={album.id} className="bg-white overflow-hidden rounded-lg transition transform hover:-translate-y-1 hover:shadow-lg border border-gray-200">
-                  <div className="group">
-                    {album.capaUrl ? (
-                      // eslint-disable-next-line jsx-a11y/img-redundant-alt
-                      <img src={album.capaUrl} alt={album.titulo} className="w-full h-48 object-cover group-hover:opacity-75" />
-                    ) : (
-                      <div className="w-full h-48 flex items-center justify-center text-gray-400">Sem Capa</div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-lg font-medium text-gray-900">{album.titulo}</h3>
-                    <p className="text-sm text-gray-500">{album.ano}</p>
+                <div key={album.id} className="flex justify-center">
+                  <div className="group cursor-default rounded-xl overflow-hidden border border-gray-200" style={{ width: 220 }}>
+                    <div className="relative aspect-square w-full transform transition-all duration-200 ease-in-out group-hover:scale-105">
+                      {album.capaUrl ? (
+                        // eslint-disable-next-line jsx-a11y/img-redundant-alt
+                        <img src={album.capaUrl} alt={album.titulo} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">Sem Capa</div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-200" />
+                      <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <div className="text-white text-sm text-center bg-black/50 px-2 py-1 rounded">
+                          <div className="font-medium">{album.titulo}</div>
+                          <div className="text-xs">{album.ano}</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
