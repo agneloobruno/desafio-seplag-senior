@@ -78,10 +78,16 @@ public class AlbumController {
     public ResponseEntity<AlbumResponseDTO> uploadCapa(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         Album album = albumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Álbum não encontrado"));
+        String arquivoAntigo = album.getCapa();
 
         String nomeArquivo = minioService.upload(file);
         album.setCapa(nomeArquivo);
         albumRepository.save(album);
+
+        // tenta remover a antiga capa (não falha se der erro)
+        if (arquivoAntigo != null && !arquivoAntigo.isBlank() && !arquivoAntigo.equals(nomeArquivo)) {
+            minioService.delete(arquivoAntigo);
+        }
 
         String url = minioService.getUrl(nomeArquivo);
 

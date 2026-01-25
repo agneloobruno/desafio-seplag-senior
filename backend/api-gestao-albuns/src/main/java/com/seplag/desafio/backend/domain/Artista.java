@@ -25,4 +25,10 @@ public class Artista {
     // Correção do mappedBy mantida aqui:
     @OneToMany(mappedBy = "artista", cascade = CascadeType.ALL)
     private List<Album> albuns;
+
+    public Artista(Long id, String nome, String foto) {
+        this.id = id;
+        this.nome = nome;
+        this.foto = foto;
+    }
 }

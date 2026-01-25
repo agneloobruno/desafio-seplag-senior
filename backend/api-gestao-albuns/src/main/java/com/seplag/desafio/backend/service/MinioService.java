@@ -2,6 +2,7 @@ package com.seplag.desafio.backend.service;
 
 import io.minio.BucketExistsArgs;
 import io.minio.GetPresignedObjectUrlArgs; // Import Novo
+import io.minio.RemoveObjectArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -64,6 +65,17 @@ public class MinioService {
             // Se der erro (ex: arquivo não existe), retorna null ou loga o erro
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // Remove um objeto permanentemente do bucket
+    public void delete(String fileName) {
+        if (fileName == null || fileName.isBlank()) return;
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(fileName).build());
+        } catch (Exception e) {
+            // Não estourar erro de upload/atualização por causa de falha na deleção
+            e.printStackTrace();
         }
     }
 }

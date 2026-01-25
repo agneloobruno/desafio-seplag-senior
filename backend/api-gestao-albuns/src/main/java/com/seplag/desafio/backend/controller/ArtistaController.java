@@ -32,7 +32,12 @@ public class ArtistaController {
 
         var uri = uriBuilder.path("/artistas/{id}").buildAndExpand(artista.getId()).toUri();
 
-        return ResponseEntity.created(uri).body(new ArtistaResponseDTO(artista));
+        String url = null;
+        if (artista.getFoto() != null && !artista.getFoto().isEmpty()) {
+            url = minioService.getUrl(artista.getFoto());
+        }
+
+        return ResponseEntity.created(uri).body(new ArtistaResponseDTO(artista, url));
     }
 
     @GetMapping
@@ -57,9 +62,16 @@ public class ArtistaController {
     public ResponseEntity<ArtistaResponseDTO> uploadFoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         var artista = service.findById(id).orElseThrow(() -> new RuntimeException("Artista não encontrado"));
 
+        String fotoAntiga = artista.getFoto();
+
         String nomeArquivo = minioService.upload(file);
         artista.setFoto(nomeArquivo);
         service.save(artista);
+
+        // tenta remover a foto antiga (se existir)
+        if (fotoAntiga != null && !fotoAntiga.isBlank() && !fotoAntiga.equals(nomeArquivo)) {
+            minioService.delete(fotoAntiga);
+        }
 
         String url = minioService.getUrl(nomeArquivo);
 
