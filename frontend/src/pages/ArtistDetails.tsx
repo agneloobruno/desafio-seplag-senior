@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { albumService } from '../services/albumService';
 import { Album } from '../types/album';
@@ -16,6 +16,18 @@ export function ArtistDetails() {
   const [novoAno, setNovoAno] = useState<number | ''>('');
   const [novoCapa, setNovoCapa] = useState<File | null>(null);
   const [creatingAlbum, setCreatingAlbum] = useState(false);
+  const fileInputsRef = useRef<Record<number, HTMLInputElement | null>>({});
+
+  const isAdmin = (() => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return false;
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload?.role === 'ADMIN';
+    } catch (e) {
+      return false;
+    }
+  })();
 
   useEffect(() => {
     if (id) {
@@ -120,6 +132,34 @@ export function ArtistDetails() {
                         <img src={album.capaUrl} alt={album.titulo} className="w-full h-32 rounded-md object-cover" />
                       ) : (
                         <div className="w-full h-32 flex items-center justify-center text-gray-400">Sem Capa</div>
+                      )}
+                      {isAdmin && (
+                        <div className="absolute top-2 right-2 z-10">
+                          <input
+                            ref={(el) => (fileInputsRef.current[album.id] = el)}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files && e.target.files[0];
+                              if (!file) return;
+                              try {
+                                await (await import('../services/albumService')).albumServiceExtras.uploadCover(album.id, file);
+                                carregarAlbuns(Number(id), page);
+                              } catch (err) {
+                                console.error('Erro ao enviar capa', err);
+                                alert('Falha ao enviar capa. Verifique o backend e o token.');
+                              }
+                            }}
+                          />
+                          <button
+                            onClick={(ev) => { ev.stopPropagation(); fileInputsRef.current[album.id]?.click(); }}
+                            className="bg-white/80 hover:bg-white text-gray-800 px-2 py-1 rounded shadow text-xs"
+                            title="Adicionar/Alterar capa"
+                          >
+                            Foto
+                          </button>
+                        </div>
                       )}
                       <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                         <button
