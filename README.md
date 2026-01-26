@@ -102,8 +102,10 @@ desafio-seplag-senior/
 │   ├── Dockerfile          # Build Multi-stage (Node -> Nginx)
 │   └── nginx.conf          # Configuração do servidor web
 └── docker-compose.yml      # Orquestração dos serviços
+```
 
-## 🧪 Como Testar o WebSocket
+
+### 🧪 Como Testar o WebSocket
 
 1. Abra o sistema em duas abas do navegador (ou use uma aba anônima).
 
