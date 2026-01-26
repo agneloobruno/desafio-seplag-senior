@@ -13,8 +13,7 @@ export const artistService = {
 
     const { data } = await api.get<Page<Artist>>('/v1/artistas', { params });
     return data;
-  }
-  ,
+  },
   create: async (nome: string): Promise<Artist> => {
     const payload = { nome };
     const { data } = await api.post<Artist>('/v1/artistas', payload);
@@ -26,6 +25,18 @@ export const artistService = {
     form.append('file', file);
     const { data } = await api.post(`/v1/artistas/${artistaId}/foto`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  }
+};
+
+export const artistServiceExtras = {
+  uploadFoto: async (artistaId: number, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    // Remove the default Content-Type so the browser sets the multipart boundary header
+    const { data } = await api.post(`/v1/artistas/${artistaId}/foto`, form, {
+      headers: { 'Content-Type': undefined as any },
     });
     return data;
   }

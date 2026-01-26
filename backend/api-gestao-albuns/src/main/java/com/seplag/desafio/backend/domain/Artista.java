@@ -21,6 +21,7 @@ public class Artista {
 
     // Nome do arquivo da foto armazenado no MinIO
     private String foto;
+    private String foto; // Nome do arquivo da foto no MinIO
 
     // Correção do mappedBy mantida aqui:
     @OneToMany(mappedBy = "artista", cascade = CascadeType.ALL)
