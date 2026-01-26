@@ -3,6 +3,7 @@ export interface Artist {
   nome: string;
   // URL opcional da foto do artista
   fotoUrl?: string;
+  fotoUrl?: string | null;
 }
 
 export interface Page<T> {

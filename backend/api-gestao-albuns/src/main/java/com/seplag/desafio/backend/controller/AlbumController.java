@@ -93,4 +93,18 @@ public class AlbumController {
 
         return ResponseEntity.ok(new AlbumResponseDTO(album, url));
     }
+
+    @PutMapping(value = "/{id}/capa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AlbumResponseDTO> updateCapa(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        Album album = albumRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Álbum não encontrado"));
+
+        String nomeArquivo = minioService.upload(file);
+        album.setCapa(nomeArquivo);
+        albumRepository.save(album);
+
+        String url = minioService.getUrl(nomeArquivo);
+
+        return ResponseEntity.ok(new AlbumResponseDTO(album, url));
+    }
 }

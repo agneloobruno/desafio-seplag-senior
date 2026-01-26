@@ -95,7 +95,8 @@ public class AuthController {
         }
 
         var newAccessToken = tokenService.generateToken((Usuario) userDetails);
+        var newRefreshToken = tokenService.generateRefreshToken((Usuario) userDetails);
 
-        return ResponseEntity.ok(new RefreshTokenResponseDTO(newAccessToken));
+        return ResponseEntity.ok(new RefreshTokenResponseDTO(newAccessToken, newRefreshToken));
     }
 }

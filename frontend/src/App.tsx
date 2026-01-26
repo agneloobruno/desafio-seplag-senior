@@ -13,9 +13,10 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 function PrivateRoute({ children }: { children: any }) {
   const { isAuthenticated, isLoading } = useContext(AuthContext);
 
-  if (isLoading) return <div>Carregando...</div>;
+  // Sem mensagem, simplesmente redireciona silenciosamente para login
+  if (isLoading) return null;
   
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 function App() {
