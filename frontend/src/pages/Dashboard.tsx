@@ -133,61 +133,77 @@ export function Dashboard() {
             {artistas.length === 0 ? (
               <div className="text-center text-gray-500 py-10">Nenhum artista encontrado.</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {artistas.map((artista) => {
-                      const imgSrc = artista.fotoUrl ?? `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(artista.nome)}`;
-                      return (
-                        <div key={artista.id} className="flex justify-center">
+              <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1">
+                {artistas.map((artista) => {
+                  const imgSrc = artista.fotoUrl ?? `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(artista.nome)}`;
+                  return (
+                    <div key={artista.id} className="flex justify-center">
+                      <div className="relative group" style={{ width: 120 }}>
+                        <div
+                          onClick={() => navigate(`/artista/${artista.id}`)}
+                          className="cursor-pointer flex flex-col items-center"
+                        >
                           <div className="relative">
-                            <div
-                              onClick={() => navigate(`/artista/${artista.id}`)}
-                              className="group cursor-pointer rounded-xl overflow-hidden border border-gray-200"
-                              style={{ width: 180 }}
-                            >
-                              <div className="relative aspect-square w-full transform transition-all duration-200 ease-in-out group-hover:scale-105">
-                                <img src={imgSrc} alt={artista.nome} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-200" />
-                                <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                  <span className="text-white text-sm font-medium bg-black/50 px-2 py-1 rounded">{artista.nome}</span>
-                                </div>
-                              </div>
-                            </div>
+                            <img src={imgSrc} alt={artista.nome} className="w-28 h-28 rounded-full object-cover border border-gray-200 shadow-sm transform transition-transform duration-200 group-hover:scale-105" />
 
-                            {isAdmin && (
-                              <div className="absolute top-2 right-2 z-10">
-                                <input
-                                  ref={(el) => (fileInputsRef.current[artista.id] = el)}
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={async (e) => {
-                                    const file = e.target.files && e.target.files[0];
-                                    if (!file) return;
-                                    try {
-                                      await artistService.uploadPhoto(artista.id, file);
-                                      carregarArtistas(page);
-                                    } catch (err) {
-                                      console.error('Erro ao enviar foto', err);
-                                      alert('Falha ao enviar foto. Verifique o backend e o token.');
-                                    }
-                                  }}
-                                />
-                                <button
-                                  onClick={(ev) => {
-                                    ev.stopPropagation();
-                                    fileInputsRef.current[artista.id]?.click();
-                                  }}
-                                  className="bg-white/80 hover:bg-white text-gray-800 px-2 py-1 rounded shadow text-xs"
-                                  title="Trocar foto do artista"
-                                >
-                                  Editar
-                                </button>
-                              </div>
-                            )}
+                            <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-all duration-150">
+                              <button
+                                onClick={(ev) => {
+                                  ev.stopPropagation();
+                                  // Ação de play (placeholder)
+                                }}
+                                aria-label={`Tocar ${artista.nome}`}
+                                className="bg-[#1DB954] hover:bg-[#1ed760] text-white p-1 rounded-full shadow-md text-xs flex items-center justify-center ring-2 ring-white transform transition-transform duration-150 hover:scale-105"
+                                title="Play"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M3 22v-20l18 10-18 10z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="mt-1 text-center">
+                            <div className="text-sm font-semibold text-gray-900">{artista.nome}</div>
+                            <div className="text-xs text-gray-500">Artista</div>
                           </div>
                         </div>
-                      );
-                    })}
+
+                        {isAdmin && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <input
+                              ref={(el) => (fileInputsRef.current[artista.id] = el)}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files && e.target.files[0];
+                                if (!file) return;
+                                try {
+                                  await artistService.uploadPhoto(artista.id, file);
+                                  carregarArtistas(page);
+                                } catch (err) {
+                                  console.error('Erro ao enviar foto', err);
+                                  alert('Falha ao enviar foto. Verifique o backend e o token.');
+                                }
+                              }}
+                            />
+                            <button
+                              onClick={(ev) => {
+                                ev.stopPropagation();
+                                fileInputsRef.current[artista.id]?.click();
+                              }}
+                              className="bg-white/80 hover:bg-white text-gray-800 px-2 py-1 rounded shadow text-xs"
+                              title="Trocar foto do artista"
+                            >
+                              Editar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
 

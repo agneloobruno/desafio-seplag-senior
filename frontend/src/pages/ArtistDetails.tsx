@@ -111,42 +111,49 @@ export function ArtistDetails() {
           {albuns.length === 0 ? (
             <div className="text-center text-gray-500 py-10">Nenhum álbum encontrado.</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-1">
               {albuns.map((album) => (
                 <div key={album.id} className="flex justify-center">
-                  <div className="group cursor-default rounded-xl overflow-hidden border border-gray-200" style={{ width: 220 }}>
-                    <div className="relative aspect-square w-full transform transition-all duration-200 ease-in-out group-hover:scale-105">
+                  <div className="group cursor-default rounded-xl overflow-hidden border border-gray-200 bg-white" style={{ width: 140 }}>
+                    <div className="relative">
                       {album.capaUrl ? (
-                        // eslint-disable-next-line jsx-a11y/img-redundant-alt
-                        <img src={album.capaUrl} alt={album.titulo} className="w-full h-full object-cover" />
+                        <img src={album.capaUrl} alt={album.titulo} className="w-full h-32 rounded-md object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">Sem Capa</div>
+                        <div className="w-full h-32 flex items-center justify-center text-gray-400">Sem Capa</div>
                       )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-200" />
-                      <div className="absolute inset-0 flex items-end justify-center p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <div className="text-white text-sm text-center bg-black/50 px-2 py-1 rounded">
-                          <div className="font-medium">{album.titulo}</div>
-                          <div className="text-xs">{album.ano}</div>
-                        </div>
+                      <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        <button
+                          onClick={(ev) => ev.stopPropagation()}
+                          aria-label={`Tocar ${album.titulo}`}
+                          className="bg-[#1DB954] p-1.5 rounded-full shadow text-white flex items-center justify-center ring-2 ring-white hover:scale-105 transform transition-transform duration-150"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 22v-20l18 10-18 10z" />
+                          </svg>
+                        </button>
                       </div>
+                    </div>
+                    <div className="mt-2 px-1 pb-2 text-left">
+                      <div className="text-sm font-medium text-gray-900 truncate">{album.titulo}</div>
+                      <div className="text-xs text-gray-500">{album.ano} • Álbum</div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
-
-          <div className="mt-6 flex justify-center items-center gap-3">
-            <button onClick={() => mudarPagina(page - 1)} disabled={page === 0} className="px-3 py-1 border rounded disabled:opacity-50">
-              Anterior
-            </button>
-            <span className="text-gray-700">Página {page + 1} de {totalPages}</span>
-            <button onClick={() => mudarPagina(page + 1)} disabled={page === totalPages - 1 || totalPages === 0} className="px-3 py-1 border rounded disabled:opacity-50">
-              Próxima
-            </button>
-          </div>
         </>
       )}
+
+      <div className="mt-6 flex justify-center items-center gap-3">
+        <button onClick={() => mudarPagina(page - 1)} disabled={page === 0} className="px-3 py-1 border rounded disabled:opacity-50">
+          Anterior
+        </button>
+        <span className="text-gray-700">Página {page + 1} de {totalPages}</span>
+        <button onClick={() => mudarPagina(page + 1)} disabled={page === totalPages - 1 || totalPages === 0} className="px-3 py-1 border rounded disabled:opacity-50">
+          Próxima
+        </button>
+      </div>
     </div>
   );
 }
