@@ -6,6 +6,7 @@ import { ArtistDetails } from './pages/ArtistDetails';
 import { useContext, useEffect, useState } from 'react';
 import { connectWebsocket } from './services/websocket';
 import './App.css';
+import NotificationToast from './components/NotificationToast';
 
 // Componente para proteger rotas privadas
 function PrivateRoute({ children }: { children: any }) {
@@ -42,14 +43,10 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         {toast && (
-          <div className="fixed top-4 right-4 z-50 bg-blue-600 text-white px-4 py-2 rounded shadow">
-            {toast}
-          </div>
+          <NotificationToast message={toast} onClose={() => setToast(null)} position="top-right" />
         )}
         {sessionNotice && (
-          <div className="fixed top-4 left-4 z-50 bg-red-600 text-white px-4 py-2 rounded shadow">
-            {sessionNotice}
-          </div>
+          <NotificationToast message={sessionNotice} onClose={() => setSessionNotice(null)} variant="error" position="top-left" />
         )}
         <Routes>
           <Route path="/login" element={<Login />} />
