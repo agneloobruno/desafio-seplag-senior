@@ -57,7 +57,7 @@ export function ArtistDetails() {
     carregarAlbuns(Number(id), novaPagina);
   };
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8 dark:bg-neutral-900 dark:text-white">
       <button
         onClick={() => navigate('/')}
         className="mb-4 text-blue-600 hover:underline flex items-center gap-2"
@@ -66,7 +66,7 @@ export function ArtistDetails() {
       </button>
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Discografia</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Discografia</h1>
         <button onClick={() => setShowAlbumForm((s) => !s)} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">+ Novo Álbum</button>
       </div>
 

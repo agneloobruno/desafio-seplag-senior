@@ -7,6 +7,7 @@ import { useContext, useEffect, useState } from 'react';
 import { connectWebsocket } from './services/websocket';
 import './App.css';
 import NotificationToast from './components/NotificationToast';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 // Componente para proteger rotas privadas
 function PrivateRoute({ children }: { children: any }) {
@@ -41,6 +42,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ThemeProvider>
       <AuthProvider>
         {toast && (
           <NotificationToast message={toast} onClose={() => setToast(null)} position="top-right" />
@@ -48,6 +50,7 @@ function App() {
         {sessionNotice && (
           <NotificationToast message={sessionNotice} onClose={() => setSessionNotice(null)} variant="error" position="top-left" />
         )}
+        <ThemeToggleButton />
         <Routes>
           <Route path="/login" element={<Login />} />
           
@@ -70,7 +73,23 @@ function App() {
           />
         </Routes>
       </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
+  );
+}
+
+function ThemeToggleButton() {
+  const { theme, toggle } = useTheme();
+  return (
+    <div className="fixed top-4 right-20 z-50">
+      <button
+        onClick={toggle}
+        className="bg-white/90 dark:bg-neutral-800 text-sm px-3 py-1 rounded shadow border"
+        title="Alternar tema claro/escuro"
+      >
+        {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+      </button>
+    </div>
   );
 }
 

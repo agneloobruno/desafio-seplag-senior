@@ -59,11 +59,11 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 dark:text-white">
+      <header className="bg-white shadow dark:bg-neutral-800">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Artistas</h1>
-          <button onClick={logout} className="text-red-600 hover:text-red-800 font-medium">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gestão de Artistas</h1>
+          <button onClick={logout} className="text-red-600 hover:text-red-800 font-medium dark:text-red-400">
             Sair
           </button>
         </div>
@@ -74,7 +74,7 @@ export function Dashboard() {
           <input
             type="text"
             placeholder="Buscar artista por nome..."
-            className="flex-1 p-2 border border-gray-300 rounded shadow-sm"
+            className="flex-1 p-2 border border-gray-300 rounded shadow-sm dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
